@@ -13,6 +13,7 @@ browser, and workers, built on [LogLayer](https://loglayer.dev).
 | [`@cues/sawdust-datadog`](./packages/datadog) | `packages/datadog` | Datadog provider: server + browser logs, RUM, APM trace injection. |
 | [`@cues/sawdust-otel`](./packages/otel) | `packages/otel` | OpenTelemetry logs provider — a transport that emits to the OTel Logs API. |
 | [`@cues/sawdust-react`](./packages/react) | `packages/react` | React/Next integration — SSR-safe `LoggerProvider`, `useLogger` / `useLoggerContext`, DI helpers. |
+| [`@cues/sawdust-angular`](./packages/angular) | `packages/angular` | Angular integration — SSR-safe `provideSawdustLogger`, `injectLogger`, DI helpers. |
 
 Providers plug into core through the `extraTransports` / `plugins` seams — see the
 [Providers guide](https://catesandrew.github.io/sawdust/docs/concepts/providers).
