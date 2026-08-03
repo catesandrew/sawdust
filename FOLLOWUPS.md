@@ -19,6 +19,8 @@ Ideas captured at extraction time (2026-08-02) — not yet started.
 
 - [ ] Reduce the `noExplicitAny` biome warnings (currently ~210, mostly in
       tests) carried over from the source — non-blocking, lint-clean today.
+- [ ] `examples/jest.md` documents mocking `@cues/sawdust` in a jest consumer;
+      add a vitest companion (this repo's own tooling) alongside it.
 - [ ] Decide on npm publish (currently `publishConfig.access: restricted`,
       private repo).
 
