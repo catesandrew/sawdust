@@ -10,9 +10,11 @@ browser, and workers, built on [LogLayer](https://loglayer.dev).
 | Package | Path | Description |
 |---|---|---|
 | [`@cues/sawdust`](./packages/core) | `packages/core` | Provider-agnostic core: façade, singleton, locators, request scope, console/pretty/consola transports. |
+| [`@cues/sawdust-datadog`](./packages/datadog) | `packages/datadog` | Datadog provider: server + browser logs, RUM, APM trace injection. |
+| [`@cues/sawdust-otel`](./packages/otel) | `packages/otel` | OpenTelemetry logs provider — a transport that emits to the OTel Logs API. |
 
-> Provider packages (`@cues/sawdust-datadog`, future `@cues/sawdust-otel`) are being split out —
-> see the [monorepo migration plan](./docs/monorepo-migration-plan.md).
+Providers plug into core through the `extraTransports` / `plugins` seams — see the
+[Providers guide](https://catesandrew.github.io/sawdust/docs/concepts/providers).
 
 ## Development
 

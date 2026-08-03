@@ -114,12 +114,35 @@ is mechanical:
 | automatic RUM error forwarding | `plugins: [datadogRumErrorPlugin()]` from `@cues/sawdust-datadog/rum` (opt-in) |
 | `RumClient` / `RumUser` from `@cues/sawdust` | from `@cues/sawdust-datadog/rum` (or `.../types`) |
 
+## OpenTelemetry — `@cues/sawdust-otel`
+
+The second provider, and living proof the seam works: a package with **zero knowledge of core
+internals** ships an OTel logs transport that plugs in through `extraTransports` alone.
+
+```bash
+pnpm add @cues/sawdust @cues/sawdust-otel
+```
+
+```typescript
+import { configureLogger } from '@cues/sawdust/logger'
+import { otelTransport } from '@cues/sawdust-otel'
+
+configureLogger({
+  transports: { console: { enabled: true } },
+  extraTransports: [otelTransport({ scopeName: 'orders-api' })],
+})
+```
+
+You own the OpenTelemetry SDK — register a `LoggerProvider` at bootstrap and every sawdust log
+becomes an OTel `LogRecord` (level → severity, message → body, context → attributes).
+
 ## Writing your own provider
 
 A provider is just a package that exports factories returning `LogLayerTransport` and/or
-`LogLayerPlugin`. Keep the vendor SDK an **optional peer dependency**, accept the caller-owned
-`service` / `logLevel` context, and return `undefined` when the integration cannot activate. Then
-consumers wire it through `extraTransports` / `plugins` exactly like the Datadog package.
+`LogLayerPlugin`. Build the transport on `@loglayer/transport` (the same base core uses), keep the
+vendor SDK an **optional peer or thin dependency**, accept the caller-owned `service` / `logLevel`
+context, and return `undefined` when the integration cannot activate. Then consumers wire it through
+`extraTransports` / `plugins` exactly like the Datadog and OpenTelemetry packages.
 
-That is the whole extension model — and it is why a future **OpenTelemetry** provider (or any
-other backend) can land as its own package without touching a line of core.
+That is the whole extension model — any backend can land as its own package without touching a line
+of core.
