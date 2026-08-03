@@ -26,13 +26,14 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: pnpm
           registry-url: https://registry.npmjs.org
 
-      # npm OIDC trusted publishing requires npm >= 11.5.1; Node 20 ships npm 10.8.
+      # npm OIDC trusted publishing requires npm >= 11.5.1. Pin npm 11 (the latest
+      # npm 12 needs Node >= 22.22/24.15, and Node 24 ships an older bundled npm).
       - name: Upgrade npm for OIDC trusted publishing
-        run: npm install --global npm@latest
+        run: npm install --global npm@11
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
