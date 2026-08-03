@@ -1,6 +1,5 @@
 import { ConsolaTransport } from '@loglayer/transport-consola'
 import { createConsola, LogTypes } from 'consola/browser'
-import { JsonAwareConsolaTransport } from './JsonAwareConsolaTransport.js'
 import type { ConsolaTransportOptions, LogLevelType } from './types/index.js'
 
 /**
@@ -29,7 +28,6 @@ import type { ConsolaTransportOptions, LogLevelType } from './types/index.js'
 export const createConsolaTransport = (
   consolaOptions: ConsolaTransportOptions,
   {
-    service,
     logLevel,
   }: {
     service: string

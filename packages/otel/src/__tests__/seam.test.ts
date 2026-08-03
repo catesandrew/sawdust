@@ -35,7 +35,10 @@ describe('sawdust-otel provider seam', () => {
     logger.info('hello from the otel seam', { feature: 'seam' })
 
     expect(emit).toHaveBeenCalledTimes(1)
-    const record = emit.mock.calls[0]?.[0] as { body: string; severityText: string }
+    const record = emit.mock.calls[0]?.[0] as {
+      body: string
+      severityText: string
+    }
     expect(record.body).toContain('hello from the otel seam')
     expect(record.severityText).toBe('INFO')
   })

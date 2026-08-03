@@ -1,10 +1,11 @@
-import { themes as prismThemes } from 'prism-react-renderer'
-import type { Config } from '@docusaurus/types'
 import type * as Preset from '@docusaurus/preset-classic'
+import type { Config } from '@docusaurus/types'
+import { themes as prismThemes } from 'prism-react-renderer'
 
 const config: Config = {
   title: 'Sawdust',
-  tagline: 'One logging API for the browser, Node.js, and workers. Configure once, log everywhere.',
+  tagline:
+    'One logging API for the browser, Node.js, and workers. Configure once, log everywhere.',
   favicon: 'img/favicon.svg',
 
   url: 'https://catesandrew.github.io',
