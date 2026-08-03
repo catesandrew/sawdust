@@ -225,26 +225,48 @@ updated Transports/Configuration reference for the factory-array API.
 
 Each phase ends green on `lint` + `typecheck` + `test` + `build`.
 
-1. **Scaffold workspace** — `pnpm-workspace.yaml`, `turbo.json`, root `package.json`,
+**Status (branch `chore/monorepo-migration`):** Phases 1–5 ✅ done and committed; Phase 6 prep ✅
+done; the actual npm publish + repo go-public remain **manual** (need `NPM_TOKEN` + the `@cues`
+scope) — see the checklist after this list.
+
+1. ✅ **Scaffold workspace** — `pnpm-workspace.yaml`, `turbo.json`, root `package.json`,
    `tsconfig.base.json` + solution config, Changesets init. Move existing package into
    `packages/core` unchanged; keep it published as `@cues/sawdust`. Verify parity (build/test
    identical to today).
-2. **Provider contract in core** — design + implement the `SawdustTransport` factory interface
-   and factory-array builder; port console/pretty/consola to factories; add the optional
-   back-compat shim. Prove it works with a temporary in-core Datadog factory. *(highest risk —
-   do before any split.)*
-3. **Extract `@cues/sawdust-datadog`** — move Datadog transport + trace injector + browser logs +
-   RUM and their deps out of core into `packages/datadog` with subpath exports and optional
-   peers. Remove Datadog deps from core. Update mocks (`__mocks__/@datadog`, `@loglayer`).
-4. **Versioning/CI** — `release.yml` (Changesets), root `ci.yml` (turbo). First changesets for
-   the split (core: major if the transports API breaks; datadog: initial `0.1.0`).
-5. **Docs** — Providers section, migration guide (old object API → factory array), regenerate the
-   site.
-6. **Publish + go public** — set each package `publishConfig.access: "public"`, add `LICENSE`
-   files, dry-run `pnpm -r publish --dry-run` / `npm pack` to inspect tarballs, first
-   `changeset publish` to npm, verify a clean-project install of each package + subpath, **then**
-   flip the GitHub repo to public.
-7. **(Later) `@cues/sawdust-otel`** — second provider validates the contract.
+2. ✅ **Provider decoupling in core** — *shipped design differs from the original "factory-array"
+   sketch and is less breaking:* core keeps its `transports` object for the built-in
+   console/pretty/consola, and providers plug in through the existing `extraTransports:
+   LogLayerTransport[]` and `plugins: LogLayerPlugin[]` seams. Core imports **no** provider. See
+   the API note below.
+3. ✅ **Extract `@cues/sawdust-datadog`** — Datadog server/browser transports, trace injector, and
+   RUM moved into `packages/datadog` (subpaths `.`, `/browser`, `/rum`, `/types`); optional
+   `@datadog/browser-*` peers; core drops all Datadog deps + `dd-trace`. Core 57 tests, datadog 24.
+4. ✅ **Versioning/CI** — `ci.yml` (turbo lint/typecheck/test/build) + `release.yml` (Changesets).
+   First release publishes both at `0.1.0`; bumps thereafter via `pnpm changeset`.
+5. ✅ **Docs** — new `concepts/providers` page + migration note; all Datadog/RUM samples updated to
+   the provider-factory form; site builds clean.
+6. 🟡 **Publish + go public** — prep ✅ (both `publishConfig.access: public`, `LICENSE` + README in
+   each, repository/keywords metadata, `npm pack --dry-run` verified). **Manual remainder** (needs
+   credentials/irreversible): reserve the `@cues` npm scope + add `NPM_TOKEN` repo secret → merge
+   to `main` (or `pnpm release`) to publish `0.1.0` → verify a clean-project install of each
+   package + subpath → **then** flip the GitHub repo public.
+7. ⬜ **(Later) `@cues/sawdust-otel`** — second provider validates the seam.
+
+> **Shipped provider API (supersedes §4's factory-array sketch).** Datadog wires through the
+> existing core seams, so core keeps `transports.{console,pretty,consola}` (non-breaking for those)
+> and providers pass instances in:
+> ```ts
+> import { configureLogger } from '@cues/sawdust/logger'
+> import { datadogTransport, datadogTraceInjectorPlugin } from '@cues/sawdust-datadog'
+> configureLogger({
+>   transports: { console: { enabled: true } },
+>   extraTransports: [datadogTransport({ service, logLevel, apiKey })],
+>   plugins: [datadogTraceInjectorPlugin({ apiKey, tracer })],
+> })
+> ```
+> Breaking only for Datadog: `transports.datadog` / `transports.datadogBrowser` /
+> `datadogTraceInjection` are gone; RUM error-forwarding is opt-in via `datadogRumErrorPlugin()`.
+> No back-compat shim was shipped (the object keys simply no longer exist on core options).
 
 ---
 

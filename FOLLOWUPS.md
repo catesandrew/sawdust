@@ -9,13 +9,14 @@ Ideas captured at extraction time (2026-08-02) — not yet started.
       sequence-flow diagrams (Mermaid), reference (entry points, configuration,
       transports), and the full pattern catalog. Deploys to GitHub Pages via
       `.github/workflows/deploy-docs.yml`.
-- [ ] **Multi-provider support, providers kept separate.** Today the transport
-      layer is Datadog-centric (`@loglayer/transport-datadog`,
-      `datadog-transport-common`, `dd-trace`, the RUM helpers). Generalize so
-      other observability providers can plug in, with each provider isolated
-      (its own module/subpath + optional peer deps) so consumers only pull the
-      transport they use. Keep Datadog as one provider among several rather than
-      the baked-in default.
+- [~] **Multi-provider support, providers kept separate.** In progress on branch
+      `chore/monorepo-migration`. Repo is now a pnpm+turbo monorepo: provider-agnostic
+      `packages/core` (`@cues/sawdust`) with **zero** Datadog deps, and
+      `packages/datadog` (`@cues/sawdust-datadog`) holding the Datadog server/browser
+      transports, APM trace injection, and RUM behind subpaths + optional peer deps.
+      Providers plug into core via the `extraTransports` / `plugins` seams. Next
+      provider (`@cues/sawdust-otel`) validates the pattern. See
+      `docs/monorepo-migration-plan.md`.
 
 ## Housekeeping
 
