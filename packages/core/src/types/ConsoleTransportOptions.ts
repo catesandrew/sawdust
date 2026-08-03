@@ -1,5 +1,4 @@
 import type { LogLevelType } from '@loglayer/shared'
-import type { stringify } from 'querystring'
 
 /**
  * Console transport configuration.

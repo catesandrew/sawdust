@@ -1,7 +1,6 @@
 import { AsyncLocalStorage } from 'node:async_hooks'
 import type { LogLayerPlugin } from '@loglayer/plugin'
 import { LogLayer } from 'loglayer'
-import { AsyncLocalStorageContextManager } from './AsyncLocalStorageContextManager.js'
 import { createConsolaTransport } from './createConsolaTransport.node.js'
 import { createConsoleTransport } from './createConsoleTransport.node.js'
 import { createPrettyTransport } from './createPrettyTransport.js'
@@ -38,7 +37,7 @@ import type {
 const asyncLocal = new AsyncLocalStorage<Record<string, any>>()
 
 // Plugin to merge ALS context into the log's context just before it ships
-const asyncContextPlugin: LogLayerPlugin = {
+const _asyncContextPlugin: LogLayerPlugin = {
   id: 'als-context',
   onBeforeDataOut({ data, context }) {
     const store = asyncLocal.getStore()

@@ -32,11 +32,9 @@ import type {
 /**
  * Composes the baseline transport list for this environment (Console only by default).
  */
-function buildTransports(
-  opts: LoggerOptions,
-  {
-    logLevel,
-  }: {
+function _buildTransports(
+  _opts: LoggerOptions,
+  _ctx: {
     logLevel: LogLevelType
   },
 ): LogLayerTransport[] {
@@ -81,7 +79,7 @@ export class LoggerImpl implements LoggerImplementation {
   constructor(
     options: LoggerOptions = {},
     existing?: ILogLayer,
-    childCreated?: BuildTransportsCreatedResult,
+    _childCreated?: BuildTransportsCreatedResult,
   ) {
     this.opts = options
     if (existing) {
@@ -129,7 +127,7 @@ export class LoggerImpl implements LoggerImplementation {
    * No-op context helper for environments without AsyncLocalStorage.
    * Simply invokes `fn` with the provided arguments.
    */
-  runWithContext<T>(ctx: Record<string, any>, fn: () => T | Promise<T>) {
+  runWithContext<T>(_ctx: Record<string, any>, fn: () => T | Promise<T>) {
     // No-op context propagation in this environment: just invoke the function.
     // This preserves the return type (sync or Promise) without side effects.
     return fn()

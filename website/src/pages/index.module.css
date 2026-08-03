@@ -3,7 +3,8 @@
   text-align: center;
   position: relative;
   overflow: hidden;
-  background: radial-gradient(
+  background:
+    radial-gradient(
       120% 120% at 50% 0%,
       rgba(181, 101, 29, 0.18) 0%,
       transparent 60%
@@ -77,7 +78,9 @@
   border-radius: 14px;
   border: 1px solid var(--ifm-color-emphasis-200);
   background: var(--ifm-background-color);
-  transition: transform 0.15s ease, border-color 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    border-color 0.15s ease;
 }
 
 .featureCard:hover {

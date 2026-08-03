@@ -32,7 +32,11 @@ const sidebars: SidebarsConfig = {
     {
       type: 'category',
       label: 'Reference',
-      items: ['reference/entry-points', 'reference/configuration', 'reference/transports'],
+      items: [
+        'reference/entry-points',
+        'reference/configuration',
+        'reference/transports',
+      ],
     },
     {
       type: 'category',

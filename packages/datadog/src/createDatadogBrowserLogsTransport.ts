@@ -57,7 +57,7 @@ export const createDatadogBrowserLogsTransport = (
     logLevel: LogLevelType
   },
 ): DataDogBrowserLogsTransport | undefined => {
-  if (!datadogOptions.init || !datadogOptions.init.clientToken) {
+  if (!datadogOptions.init?.clientToken) {
     return undefined
   }
 

@@ -39,7 +39,7 @@ import type {
 // Simple per-call context stack for the browser (emulates ALS semantics for runWithContext)
 const browserContextStack: Array<Record<string, any>> = []
 
-const browserContextPlugin: LogLayerPlugin = {
+const _browserContextPlugin: LogLayerPlugin = {
   id: 'browser-run-context',
   onBeforeDataOut({ data, context }) {
     const top = browserContextStack.length
