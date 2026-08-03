@@ -13,3 +13,8 @@ overrides:
   '@loglayer/transport-datadog-browser-logs': 2.2.8
   '@loglayer/transport-simple-pretty-terminal': 2.2.8
   loglayer: 6.9.1
+  # Collapse React typings to a single copy so the docs site and the
+  # sawdust-react package don't see conflicting ReactNode definitions.
+  # Pinned to 19 (what Docusaurus's react-router types already resolve to).
+  '@types/react': ^19.0.0
+  '@types/react-dom': ^19.0.0

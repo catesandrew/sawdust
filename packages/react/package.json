@@ -1,0 +1,67 @@
+{
+  "name": "@cues/sawdust-react",
+  "version": "0.1.0",
+  "description": "React/Next integration for @cues/sawdust — SSR-safe LoggerProvider, useLogger / useLoggerContext hooks, and dependency-injection helpers.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/catesandrew/sawdust.git",
+    "directory": "packages/react"
+  },
+  "homepage": "https://catesandrew.github.io/sawdust/",
+  "bugs": "https://github.com/catesandrew/sawdust/issues",
+  "keywords": [
+    "react",
+    "nextjs",
+    "logging",
+    "logger",
+    "loglayer",
+    "sawdust",
+    "hooks",
+    "ssr"
+  ],
+  "type": "module",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/cjs/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "!dist/tsconfig.tsbuildinfo",
+    "!dist/cjs/tsconfig.tsbuildinfo"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json && tsc -p tsconfig.cjs.json && node ./scripts/postbuild-cjs.mjs",
+    "lint": "biome check .",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run"
+  },
+  "peerDependencies": {
+    "@cues/sawdust": "workspace:*",
+    "react": ">=18",
+    "react-dom": ">=18"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.5",
+    "@cues/sawdust": "workspace:*",
+    "@testing-library/dom": "^10.4.0",
+    "@testing-library/react": "^16.1.0",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "jsdom": "^26.1.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "typescript": "^5.9.3",
+    "vitest": "^3.0.0"
+  }
+}
