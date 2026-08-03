@@ -1,6 +1,6 @@
 {
   "name": "@cues/sawdust-react",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "React/Next integration for @cues/sawdust — SSR-safe LoggerProvider, useLogger / useLoggerContext hooks, and dependency-injection helpers.",
   "license": "MIT",
   "repository": {

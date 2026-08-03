@@ -1,6 +1,6 @@
 {
   "name": "@cues/sawdust",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Runtime-agnostic logging toolkit built on LogLayer — Node and browser console/consola/pretty transports, request-scoped context, and structured error serialization. Datadog logs/RUM/APM live in @cues/sawdust-datadog.",
   "license": "MIT",
   "repository": {

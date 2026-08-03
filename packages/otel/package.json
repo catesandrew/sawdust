@@ -1,6 +1,6 @@
 {
   "name": "@cues/sawdust-otel",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "OpenTelemetry logs provider for @cues/sawdust — a LogLayer transport that emits to the OpenTelemetry Logs API, wired through the sawdust extraTransports seam.",
   "license": "MIT",
   "repository": {

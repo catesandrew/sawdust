@@ -1,6 +1,6 @@
 {
   "name": "@cues/sawdust-datadog",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Datadog logs, RUM, and APM trace-injection provider for @cues/sawdust — server + browser transports and plugins wired through the sawdust extraTransports/plugins seams.",
   "license": "MIT",
   "repository": {
