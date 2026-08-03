@@ -3,6 +3,23 @@
   "version": "0.1.0",
   "description": "Runtime-agnostic logging toolkit built on LogLayer — Node and browser console/consola/pretty transports, request-scoped context, and structured error serialization. Datadog logs/RUM/APM live in @cues/sawdust-datadog.",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/catesandrew/sawdust.git",
+    "directory": "packages/core"
+  },
+  "homepage": "https://catesandrew.github.io/sawdust/",
+  "bugs": "https://github.com/catesandrew/sawdust/issues",
+  "keywords": [
+    "logging",
+    "logger",
+    "loglayer",
+    "typescript",
+    "observability",
+    "structured-logging",
+    "nodejs",
+    "browser"
+  ],
   "type": "module",
   "main": "./dist/cjs/index.js",
   "module": "./dist/index.js",
@@ -40,7 +57,7 @@
     "!dist/cjs/tsconfig.tsbuildinfo"
   ],
   "publishConfig": {
-    "access": "restricted"
+    "access": "public"
   },
   "scripts": {
     "build": "tsc -p tsconfig.json && tsc -p tsconfig.cjs.json && node ./scripts/postbuild-cjs.mjs",

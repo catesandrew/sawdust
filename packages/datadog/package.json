@@ -3,6 +3,23 @@
   "version": "0.1.0",
   "description": "Datadog logs, RUM, and APM trace-injection provider for @cues/sawdust — server + browser transports and plugins wired through the sawdust extraTransports/plugins seams.",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/catesandrew/sawdust.git",
+    "directory": "packages/datadog"
+  },
+  "homepage": "https://catesandrew.github.io/sawdust/",
+  "bugs": "https://github.com/catesandrew/sawdust/issues",
+  "keywords": [
+    "datadog",
+    "rum",
+    "dd-trace",
+    "logging",
+    "loglayer",
+    "sawdust",
+    "observability",
+    "apm"
+  ],
   "type": "module",
   "main": "./dist/cjs/index.js",
   "module": "./dist/index.js",
