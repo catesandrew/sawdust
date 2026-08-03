@@ -1,0 +1,62 @@
+{
+  "name": "@cues/sawdust-otel",
+  "version": "0.1.0",
+  "description": "OpenTelemetry logs provider for @cues/sawdust — a LogLayer transport that emits to the OpenTelemetry Logs API, wired through the sawdust extraTransports seam.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/catesandrew/sawdust.git",
+    "directory": "packages/otel"
+  },
+  "homepage": "https://catesandrew.github.io/sawdust/",
+  "bugs": "https://github.com/catesandrew/sawdust/issues",
+  "keywords": [
+    "opentelemetry",
+    "otel",
+    "logs",
+    "logging",
+    "loglayer",
+    "sawdust",
+    "observability"
+  ],
+  "type": "module",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/cjs/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "!dist/tsconfig.tsbuildinfo",
+    "!dist/cjs/tsconfig.tsbuildinfo"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json && tsc -p tsconfig.cjs.json && node ./scripts/postbuild-cjs.mjs",
+    "lint": "biome check .",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@loglayer/transport": "^2.3.4",
+    "@opentelemetry/api-logs": "^0.204.0"
+  },
+  "peerDependencies": {
+    "@cues/sawdust": "workspace:*"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.5",
+    "@cues/sawdust": "workspace:*",
+    "@types/node": "^20.14.0",
+    "typescript": "^5.9.3",
+    "vitest": "^3.0.0"
+  }
+}

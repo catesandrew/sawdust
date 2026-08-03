@@ -136,6 +136,31 @@ importers:
         specifier: ^3.0.0
         version: 3.2.7(@types/debug@4.1.13)(@types/node@20.19.43)(jiti@1.21.7)(jsdom@26.1.0)(terser@5.49.0)
 
+  packages/otel:
+    dependencies:
+      '@loglayer/transport':
+        specifier: 2.3.4
+        version: 2.3.4
+      '@opentelemetry/api-logs':
+        specifier: ^0.204.0
+        version: 0.204.0
+    devDependencies:
+      '@biomejs/biome':
+        specifier: ^2.5.5
+        version: 2.5.6
+      '@cues/sawdust':
+        specifier: workspace:*
+        version: link:../core
+      '@types/node':
+        specifier: ^20.14.0
+        version: 20.19.43
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+      vitest:
+        specifier: ^3.0.0
+        version: 3.2.7(@types/debug@4.1.13)(@types/node@20.19.43)(jiti@1.21.7)(jsdom@26.1.0)(terser@5.49.0)
+
   website:
     dependencies:
       '@docusaurus/core':
@@ -1984,6 +2009,10 @@ packages:
     engines: {node: '>=20'}
     peerDependencies:
       '@openfeature/core': ^1.12.0
+
+  '@opentelemetry/api-logs@0.204.0':
+    resolution: {integrity: sha512-DqxY8yoAaiBPivoJD4UtgrMS8gEmzZ5lnaxzPojzLVHBGqPxgWm4zcuvcUHZiqQ6kRX2Klel2r9y8cA2HAtqpw==}
+    engines: {node: '>=8.0.0'}
 
   '@opentelemetry/api-logs@0.221.0':
     resolution: {integrity: sha512-OlanaW1vv7ufTqQ3/fPLI4arGt5ZoM+P8abOMki6uEYnpRazepSWDwDnnw+la7kE26SHVC18//SMccrDvLKOXQ==}
@@ -9816,13 +9845,16 @@ snapshots:
       '@openfeature/core': 1.12.0
     optional: true
 
+  '@opentelemetry/api-logs@0.204.0':
+    dependencies:
+      '@opentelemetry/api': 1.9.1
+
   '@opentelemetry/api-logs@0.221.0':
     dependencies:
       '@opentelemetry/api': 1.9.1
     optional: true
 
-  '@opentelemetry/api@1.9.1':
-    optional: true
+  '@opentelemetry/api@1.9.1': {}
 
   '@oxc-parser/binding-android-arm-eabi@0.132.0':
     optional: true
