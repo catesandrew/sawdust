@@ -79,6 +79,48 @@ main().catch((error) => {
 })
 ```
 
+## Adding Datadog (server logs + APM trace injection)
+
+Core is provider-agnostic — the console/pretty/consola transports above need nothing extra. To
+ship to Datadog, install `@cues/sawdust-datadog` and feed its factories into `extraTransports`
+(server logs) and `plugins` (APM trace injection):
+
+```typescript
+import ddTrace from 'dd-trace'
+import { configureLogger } from '@cues/sawdust/logger'
+import { datadogTransport, datadogTraceInjectorPlugin } from '@cues/sawdust-datadog'
+
+configureLogger(
+  {
+    service: 'orders-api',
+    environment: 'production',
+    transports: { console: { enabled: true } },
+    extraTransports: [
+      datadogTransport({
+        service: 'orders-api',
+        logLevel: 'info',
+        apiKey: process.env.DD_API_KEY,
+        enabled: process.env.NODE_ENV === 'production',
+        options: { ddsource: 'nodejs', ddtags: 'env:prod' },
+      }),
+    ],
+    plugins: [
+      datadogTraceInjectorPlugin({
+        apiKey: process.env.DD_API_KEY,
+        tracer: ddTrace.init(),
+        service: 'orders-api',
+        environment: 'production',
+      }),
+    ],
+  },
+  { id: 'orders-api:final', stage: 'final' },
+)
+```
+
+Both factories return `undefined` when their prerequisites are missing (`apiKey`, or the
+`dd-trace` `tracer`), and Sawdust skips falsy entries — so a dev build with no `DD_API_KEY` stays
+console-only with no branching.
+
 ## Inspecting the active logger
 
 `getCurrentLoggerMeta()` returns the metadata branded onto the canonical logger — useful for a

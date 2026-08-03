@@ -35,17 +35,18 @@ flowchart TB
     LX["LogLayer instance"]
   end
 
-  subgraph transports["Transports & plugins"]
+  subgraph transports["Core transports & plugins (@cues/sawdust)"]
     T1["console"]
     T2["pretty terminal"]
     T3["consola"]
-    T4["datadog (server)"]
-    T5["datadog-browser-logs"]
-    P1["dd trace-injector plugin"]
     P2["runtime-tag plugin"]
   end
 
-  subgraph rum["RUM"]
+  subgraph provider["Provider (@cues/sawdust-datadog)"]
+    T4["datadogTransport (server)"]
+    T5["datadogBrowserTransport"]
+    P1["dd trace-injector plugin"]
+    RE["datadogRumErrorPlugin"]
     RC["Datadog RUM client"]
   end
 
@@ -54,9 +55,16 @@ flowchart TB
   C --> RL --> RC
   B -.reads.-> RS
   S --> LX
-  LX --> T1 & T2 & T3 & T4 & T5
-  LX --- P1 & P2
+  LX --> T1 & T2 & T3
+  LX --- P2
+  T4 & T5 -.extraTransports.-> LX
+  P1 & RE -.plugins.-> LX
 ```
+
+Core (`@cues/sawdust`) is **provider-agnostic**: it wires only its own console/pretty/consola
+transports and the runtime-tag plugin. Datadog logs, APM trace injection, and RUM live in the
+separate `@cues/sawdust-datadog` package and attach through two generic seams —
+`extraTransports` (transports) and `plugins` (LogLayer plugins).
 
 - **Façade (`logger`)** — a stable object you import once. It always delegates to the current
   canonical singleton, so upgrades never break existing imports.
@@ -85,8 +93,9 @@ flowchart LR
   cond -->|neutral| generic["logger.js"]
 ```
 
-The same split applies to `request-scope`, `rum`, and the locators. This is why
-`AsyncLocalStorage` (Node-only) never leaks into a browser bundle.
+The same split applies to `request-scope` and the locators. This is why `AsyncLocalStorage`
+(Node-only) never leaks into a browser bundle. The RUM locator uses the identical `.node` /
+`.web` technique, but now lives in `@cues/sawdust-datadog` (`rum.node.ts` / `rum.web.ts`).
 
 ## Why service locators (not module singletons)
 
@@ -115,16 +124,25 @@ bundle copy and runtime, Node, web, and generic modules all mutate one slot. See
 
 ## Module map
 
+**Core — `@cues/sawdust`**
+
 | Concern | Modules |
 |---|---|
 | Façade | `logger.facade.ts`, `logger.ts` |
 | Singleton + scoring | `logger.singleton.ts` |
-| Locators | `createLocator.ts`, `loggerLocator*.ts`, `rumLocator*.ts` |
+| Locators | `createLocator.ts`, `loggerLocator*.ts` |
 | Runtime builds | `*.node.ts`, `*.web.ts` |
 | Request scope | `request-scope*.ts`, `AsyncLocalStorageContextManager.ts` |
-| Transports | `createConsoleTransport*`, `createPrettyTransport`, `createConsolaTransport*`, `createDatadogTransport`, `createDatadogBrowserLogsTransport` |
-| Plugins | `createDatadogTraceInjectorPlugin.ts`, `createRuntimeTagPlugin.ts` |
-| RUM | `rum*.ts`, `createLocator.ts` |
+| Core transports | `createConsoleTransport*`, `createPrettyTransport`, `createConsolaTransport*` |
+| Plugins | `createRuntimeTagPlugin.ts` |
 | Errors & context | `formatError.ts`, `serializeError.ts`, `sanitizeRecord.ts`, `loggerUtils.ts` |
+
+**Provider — `@cues/sawdust-datadog`**
+
+| Concern | Modules |
+|---|---|
+| Server logs + browser logs | `createDatadogTransport.ts`, `createDatadogBrowserLogsTransport.ts` (`index.ts` / `browser.ts` factories) |
+| APM trace injection | `createDatadogTraceInjectorPlugin.ts` |
+| RUM | `rum.node.ts`, `rum.web.ts`, `rumLocator*.ts`, `makeRumErrorPlugin.ts` |
 
 Continue to [Sequence Flows](./sequence-flows.md) to see these interact over time.

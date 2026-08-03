@@ -16,7 +16,7 @@ pair so state never leaks across suites.
 
 ```typescript
 import { setLogger, resetLoggerLocator, noopLogger } from '@cues/sawdust'
-import { setRumClient, resetRumClientLocator, createRumClient } from '@cues/sawdust/rum'
+import { setRumClient, resetRumClientLocator, createRumClient } from '@cues/sawdust-datadog/rum'
 
 beforeEach(() => {
   resetLoggerLocator()
@@ -75,7 +75,7 @@ The RUM locator behaves the same way. Inject a noop client or stub the methods y
 fire (see the full stub in the [RUM guide](./rum.md#testing-with-mocks)).
 
 ```typescript
-import { setRumClient, resetRumClientLocator } from '@cues/sawdust/rum'
+import { setRumClient, resetRumClientLocator } from '@cues/sawdust-datadog/rum'
 
 beforeEach(() => {
   resetRumClientLocator()

@@ -6,6 +6,13 @@ description: Use the RUM service locator so any shared module can reach the conf
 
 # RUM integration
 
+RUM lives in the **`@cues/sawdust-datadog`** provider package, not core. Install it alongside
+core and import from the `/rum` subpath:
+
+```bash
+pnpm add @cues/sawdust-datadog @datadog/browser-rum
+```
+
 Historically the browser build relied on Datadog's global singleton. Sawdust exposes
 `getRumClient` so any shared module can reach the configured RUM client through the service
 locator — matching the logger pattern.
@@ -34,7 +41,7 @@ shared code resolve the same client.
 
 ```typescript
 // app/rum/bootstrap.ts
-import { getRumClient } from '@cues/sawdust/rum'
+import { getRumClient } from '@cues/sawdust-datadog/rum'
 
 export function ensureRum() {
   const rum = getRumClient({
@@ -61,7 +68,7 @@ Call `ensureRum()` once during browser hydration. The locator stores the client,
 
 ```typescript
 // packages/shared-metrics/src/recordFeatureUsage.ts
-import { getRumClient } from '@cues/sawdust/rum'
+import { getRumClient } from '@cues/sawdust-datadog/rum'
 
 export function recordFeatureUsage(feature: string) {
   const rum = getRumClient()
@@ -74,18 +81,45 @@ No direct `datadogRum` imports; works in any consumer app without extra wiring.
 
 ## Identifying users
 
+RUM types now ship from the provider package (`@cues/sawdust-datadog/rum`, or
+`@cues/sawdust-datadog/types`), not from core.
+
 ```typescript
-import type { RumClient, RumUser } from '@cues/sawdust'
+import type { RumClient, RumUser } from '@cues/sawdust-datadog/rum'
 
 const anonymousUser: RumUser = { id, anonymousId, type: 'anonymous' }
 rum.setUser(anonymousUser)
 rum.setGlobalAttribute('authenticated', false)
 ```
 
+## Forwarding errors to RUM (opt-in)
+
+Error forwarding used to happen automatically inside the browser logger. It is now an **opt-in
+plugin** so core stays provider-agnostic. Add `datadogRumErrorPlugin()` to `plugins` and any
+error-bearing log is mirrored to RUM via `rum.addError` — while still reaching every transport.
+
+```typescript
+import { configureLogger } from '@cues/sawdust/logger'
+import { datadogRumErrorPlugin } from '@cues/sawdust-datadog/rum'
+
+configureLogger(
+  {
+    prefix: '[UI]',
+    transports: { console: { enabled: true } },
+    plugins: [datadogRumErrorPlugin()],
+  },
+  { id: 'web:final', stage: 'final' },
+)
+```
+
+The plugin resolves the client through the same locator, so wire up `getRumClient(...)` /
+`setRumClient(...)` (above) first — forwarding is a no-op until a client is installed and
+`isEnabled()` returns `true`.
+
 ## Testing with mocks
 
 ```typescript
-import { setRumClient, resetRumClientLocator, getRumClient } from '@cues/sawdust/rum'
+import { setRumClient, resetRumClientLocator, getRumClient } from '@cues/sawdust-datadog/rum'
 
 beforeEach(() => {
   resetRumClientLocator()

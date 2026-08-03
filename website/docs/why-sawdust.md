@@ -52,8 +52,10 @@ re-wiring, no "logger is undefined during module init" races. See
 ### 3. Transports are a config detail, not a rewrite
 
 Pretty output in dev, Datadog in prod, stderr JSON for an MCP server — all the same call sites.
-Flip a flag in `configureLogger`; the code that logs never changes. See the
-[Transport reference](./reference/transports.md).
+Flip a flag in `configureLogger`; the code that logs never changes. Core stays
+**provider-agnostic**: vendors like Datadog ship as separate packages and clip onto the
+`extraTransports` / `plugins` seams. See the [Transport reference](./reference/transports.md) and
+the [Providers](./concepts/providers.md) page.
 
 ### 4. Context that follows the request
 
@@ -67,10 +69,27 @@ The service-locator design means a test can swap in a mock, assert the exact cal
 with no leaked global state between suites. Most loggers make this an afterthought; Sawdust
 ships the resets.
 
+## Provider model in one glance
+
+Datadog used to be baked into core's `transports` object. It now lives in `@cues/sawdust-datadog`
+and plugs into the generic seams — a one-line move:
+
+```typescript
+// Before — Datadog inside core
+transports: { datadog: { enabled: true, apiKey, options: {} } }
+
+// After — provider factory into extraTransports
+import { datadogTransport } from '@cues/sawdust-datadog'
+extraTransports: [datadogTransport({ service, logLevel: 'info', apiKey, options: {} })]
+```
+
+See [Providers](./concepts/providers.md) for the full model.
+
 ## Honest trade-offs
 
-- **It is opinionated.** Sawdust is built on LogLayer and is Datadog-forward today. If you need
-  a different backend, you write a transport (multi-provider isolation is on the roadmap).
+- **It is opinionated.** Sawdust is built on LogLayer. Core is provider-agnostic, and today the
+  first-party provider is Datadog (`@cues/sawdust-datadog`). Need a different backend? Write a
+  transport factory and pass it through `extraTransports` — no core changes required.
 - **It is a singleton by design.** That is a feature for shared logging, but if you need many
   independent, isolated loggers in one process, you will lean on `child()` and DI rather than
   the façade.

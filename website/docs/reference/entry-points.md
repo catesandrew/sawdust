@@ -9,16 +9,30 @@ description: The subpath export map and what to import from each.
 The package exposes **runtime-conditional** exports. Import a bare specifier and the correct
 browser/node variant resolves automatically.
 
-## Subpath map
+## Core: `@cues/sawdust`
+
+Core is provider-agnostic. RUM and Datadog types **no longer live here** — they moved to
+`@cues/sawdust-datadog` (see the next table).
 
 | Import specifier | Purpose | Representative exports |
 |---|---|---|
-| `@cues/sawdust` | Root barrel — **types** + pure utils + locator/rum helpers | `formatError`, `mergeContext`, `sanitizeForLogging`, `getLogger`, `setLogger`, `resetLoggerLocator`, `noopLogger`, and all `type` exports |
+| `@cues/sawdust` | Root barrel — **types** + pure utils + logger locator helpers | `formatError`, `mergeContext`, `sanitizeForLogging`, `getLogger`, `setLogger`, `resetLoggerLocator`, `noopLogger`, and all core `type` exports |
 | `@cues/sawdust/logger` | The runtime logger façade | `logger`, `configureLogger`, `adoptExternalLogger`, `getRequestLogger`, `getCurrentLoggerMeta`, `readLoggerMeta`, `LoggerImpl` |
 | `@cues/sawdust/request-scope` | AsyncLocalStorage scope | `withRequestContext`, `getRequestLogger` |
-| `@cues/sawdust/rum` | Datadog RUM locator | `getRumClient`, `setRumClient`, `resetRumClientLocator`, `createRumClient` |
-| `@cues/sawdust/types` and `@cues/sawdust/types/*` | Public type definitions | all transport/option/logger types |
+| `@cues/sawdust/types` and `@cues/sawdust/types/*` | Public core type definitions | core transport/option/logger types |
 | `@cues/sawdust/serializeError` | Structured error serialization | serialize/deserialize helpers |
+
+## Provider: `@cues/sawdust-datadog`
+
+Datadog logs, APM trace injection, and RUM ship as a separate package with its own subpaths.
+`@datadog/browser-logs` and `@datadog/browser-rum` are optional peer deps of this package.
+
+| Import specifier | Purpose | Representative exports |
+|---|---|---|
+| `@cues/sawdust-datadog` | Server Datadog logs + APM trace injection factories | `datadogTransport`, `datadogTraceInjectorPlugin`, `DatadogTransportOptions`, `DatadogTraceInjectionOptions` |
+| `@cues/sawdust-datadog/browser` | Datadog **browser** logs transport factory | `datadogBrowserTransport`, `DatadogBrowserTransportOptions` |
+| `@cues/sawdust-datadog/rum` | RUM locator + error-forwarding plugin | `getRumClient`, `setRumClient`, `resetRumClientLocator`, `createRumClient`, `datadogRumErrorPlugin`, `RumClient`, `RumUser` |
+| `@cues/sawdust-datadog/types` and `.../types/*` | Datadog + RUM type definitions | `DatadogTransportOptions`, `RumClient`, `RumUser`, `RumInitOptions`, … |
 
 :::tip The one rule to remember
 **Types** come from the root `@cues/sawdust`; the **runtime `logger`** and `configureLogger`

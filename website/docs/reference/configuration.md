@@ -13,6 +13,7 @@ description: configureLogger options, install hints, and environment variables.
 ```typescript
 import { configureLogger } from '@cues/sawdust/logger'
 import type { LoggerOptions } from '@cues/sawdust'
+import { datadogTransport } from '@cues/sawdust-datadog'
 
 const options: LoggerOptions = {
   prefix: '[api]',
@@ -21,14 +22,18 @@ const options: LoggerOptions = {
   version: '1.4.2',
   defaultLevel: 'info',
   defaultContext: { region: 'us-east-1' },
+  // Core transports only — console / pretty / consola.
   transports: {
     console: { enabled: true },
     pretty: { enabled: false },
     consola: { enabled: false },
-    datadog: { enabled: true, apiKey: process.env.DD_API_KEY },
-    datadogBrowser: { enabled: false },
   },
-  datadogTraceInjection: { enabled: true },
+  // Providers plug in here. datadogTransport comes from @cues/sawdust-datadog.
+  extraTransports: [
+    datadogTransport({ service: 'orders-api', logLevel: 'info', apiKey: process.env.DD_API_KEY, options: {} }),
+  ],
+  // LogLayer plugins — e.g. datadogTraceInjectorPlugin() from @cues/sawdust-datadog.
+  plugins: [],
 }
 
 configureLogger(options, { id: 'orders-api:final', stage: 'final', force: false })
@@ -36,17 +41,21 @@ configureLogger(options, { id: 'orders-api:final', stage: 'final', force: false 
 
 ### Top-level options
 
+Core is **provider-agnostic**: it knows only its own console/pretty/consola transports. Anything
+provider-specific (Datadog logs, APM trace injection, RUM) attaches through the generic
+`extraTransports` and `plugins` seams — see [Providers](../concepts/providers.md).
+
 | Field | Type | Notes |
 |---|---|---|
 | `prefix` | `string` | Label prepended to output. |
-| `service` | `string` | Service name (also used by Datadog transports). |
+| `service` | `string` | Service name (also passed to provider factories you construct). |
 | `environment` | `string` | e.g. `development` / `production`. |
 | `version` | `string` | Release version recorded in metadata. |
 | `defaultLevel` | `LogLevelType` | `'trace' \| 'debug' \| 'info' \| 'warn' \| 'error' \| 'fatal'`. |
 | `defaultContext` | `Record<string, unknown>` | Merged into every log. |
-| `transports` | `LoggerTransportsOptions` | Per-transport config — see [Transports](./transports.md). |
-| `datadogTraceInjection` | `DatadogTraceInjectionOptions` | dd-trace correlation (Node only). |
-| `plugins` | `LogLayerPlugin[]` | Additional LogLayer plugins. |
+| `transports` | `LoggerTransportsOptions` | Core per-transport config (`console` / `pretty` / `consola`) — see [Transports](./transports.md). |
+| `extraTransports` | `LogLayerTransport[]` | Additional transports appended after the built-ins. Provider factories (e.g. `datadogTransport`, `datadogBrowserTransport`) return one of these; falsy entries are skipped. |
+| `plugins` | `LogLayerPlugin[]` | Additional LogLayer plugins, e.g. `datadogTraceInjectorPlugin()` or `datadogRumErrorPlugin()`. |
 
 ### Install hints (second argument)
 
@@ -63,12 +72,15 @@ instead of rebuilding transports. Takes the same hints as `configureLogger`.
 
 ## Environment variables
 
-| Variable | Effect |
-|---|---|
-| `NODE_ENV` | Toggles pretty transport defaults. |
-| `DD_API_KEY` | Enables the Datadog **server** logs transport. |
-| `DD_CLIENT_TOKEN` | Enables the Datadog **browser** logs transport. |
-| `DD_TRACE_ENABLED` | Controls Datadog APM trace injection (Node only). |
+Core reads only `NODE_ENV`. The `DD_*` variables belong to `@cues/sawdust-datadog` — you read
+them yourself and pass the values into its factories; core never touches them.
+
+| Variable | Used by | Effect |
+|---|---|---|
+| `NODE_ENV` | core | Toggles pretty transport defaults. |
+| `DD_API_KEY` | `@cues/sawdust-datadog` | Passed to `datadogTransport` / `datadogTraceInjectorPlugin` (server). |
+| `DD_CLIENT_TOKEN` | `@cues/sawdust-datadog/browser` | Passed to `datadogBrowserTransport.init.clientToken`. |
+| `DD_TRACE_ENABLED` | `@cues/sawdust-datadog` | Gate you apply around `datadogTraceInjectorPlugin` (Node only). |
 
 ## Log levels
 

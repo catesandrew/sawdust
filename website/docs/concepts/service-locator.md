@@ -18,9 +18,12 @@ sync the locator automatically — no separate `setLogger` call.
 ```typescript
 // apps/web/src/instrumentation.ts
 import { configureLogger } from '@cues/sawdust/logger'
+import { datadogTransport } from '@cues/sawdust-datadog'
 
 configureLogger({
-  transports: { console: { enabled: true }, datadog: { enabled: true } },
+  service: 'web',
+  transports: { console: { enabled: true } },
+  extraTransports: [datadogTransport({ service: 'web', logLevel: 'info', apiKey: process.env.DD_API_KEY, options: {} })],
 })
 // The singleton already updated the locator; the façade points at the same instance.
 ```

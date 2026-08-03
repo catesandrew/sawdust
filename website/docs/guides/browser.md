@@ -14,9 +14,13 @@ promote the logger to its final config (after hydration) and how to stay SSR-saf
 Call `ensureBrowserLogger()` from your first client entry (`_app.tsx`, the top-level layout, or
 a hydration effect) to promote the façade to the final logger.
 
+Core transports (`console`, `pretty`) stay under `transports`. The Datadog browser logs transport
+is a provider factory from `@cues/sawdust-datadog/browser`, wired through `extraTransports`.
+
 ```typescript
 // app/logger/bootstrap.ts
 import { logger, configureLogger, getCurrentLoggerMeta } from '@cues/sawdust/logger'
+import { datadogBrowserTransport } from '@cues/sawdust-datadog/browser'
 
 const isDev =
   typeof window !== 'undefined' &&
@@ -39,11 +43,23 @@ export function ensureBrowserLogger() {
           viewMode: 'inline',
           includeDataInBrowserConsole: true,
         },
-        datadogBrowser: {
-          enabled: !!window.__DATADOG_CLIENT_TOKEN__,
-          options: { forwardErrorsToLogs: true, service: 'my-web-app' },
-        },
       },
+      // Datadog browser logs — provider factory. Returns undefined (safely skipped)
+      // when init.clientToken is absent.
+      extraTransports: [
+        datadogBrowserTransport({
+          service: 'my-web-app',
+          environment: 'prod',
+          version: '1.0.0',
+          logLevel: 'info',
+          enabled: !!window.__DATADOG_CLIENT_TOKEN__,
+          init: {
+            clientToken: window.__DATADOG_CLIENT_TOKEN__,
+            forwardErrorsToLogs: true,
+            sessionSampleRate: 100,
+          },
+        }),
+      ],
     },
     { id: 'web:final', stage: 'final' },
   )
@@ -52,6 +68,12 @@ export function ensureBrowserLogger() {
   return configured
 }
 ```
+
+:::tip Mirror errors into RUM
+Error-to-RUM forwarding is no longer automatic in the browser logger — it is an opt-in plugin.
+Add `plugins: [datadogRumErrorPlugin()]` (from `@cues/sawdust-datadog/rum`) and wire a RUM client
+via `getRumClient` / `setRumClient`. See the [RUM guide](./rum.md#forwarding-errors-to-rum-opt-in).
+:::
 
 :::tip SSR-safe mounting
 In a `'use client'` provider that also renders on the server, strip transports during SSR and

@@ -110,8 +110,10 @@ pretty + Consola, plus Datadog trace injection, emits a one-time startup log, an
 the server runtime.
 
 ```typescript
+import ddTrace from 'dd-trace'
 import { logger, configureLogger } from '@cues/sawdust/logger'
 import type { LoggerOptions } from '@cues/sawdust'
+import { datadogTransport, datadogTraceInjectorPlugin } from '@cues/sawdust-datadog'
 
 let hasLoggedStartup = false
 
@@ -122,12 +124,19 @@ export function createLogger(opts: LoggerOptions = {}): LoggerImplementation {
     environment: process.env.NODE_ENV,
     transports: {
       console: { enabled: true, appendObjectData: true, stringify: true, messageField: 'msg', dateField: 'ts', levelField: 'level' },
-      datadog: { enabled: !!process.env.DD_API_KEY, apiKey: process.env.DD_API_KEY },
       pretty: { enabled: process.env.NODE_ENV === 'development', viewMode: 'inline', runtime: 'node' },
       consola: { enabled: false },
       ...opts.transports,
     },
-    datadogTraceInjection: { enabled: true },
+    // Datadog is a provider now — factories into extraTransports / plugins.
+    extraTransports: [
+      datadogTransport({ service: 'web-app', logLevel: 'info', apiKey: process.env.DD_API_KEY, options: {} }),
+      ...(opts.extraTransports ?? []),
+    ],
+    plugins: [
+      datadogTraceInjectorPlugin({ apiKey: process.env.DD_API_KEY, tracer: ddTrace.init(), service: 'web-app' }),
+      ...(opts.plugins ?? []),
+    ],
     ...opts,
   }
 
@@ -142,6 +151,9 @@ export function createLogger(opts: LoggerOptions = {}): LoggerImplementation {
 
 **Guidance:** Overlaps with Pattern 2 (both call `configureLogger` with `stage: 'final'` and a
 JSON console transport). The console-transport JSON shape is a shared concept worth centralizing.
+Note the Datadog wiring: `datadogTransport` / `datadogTraceInjectorPlugin` come from
+`@cues/sawdust-datadog` and return `undefined` when their prerequisites are missing (Sawdust skips
+falsy `extraTransports` / `plugins` entries), so the same factory call is safe in dev and prod.
 
 ---
 
@@ -263,8 +275,8 @@ methods (`isEnabled`, `setUser`, `clearUser`, `stopSession`, `setGlobalAttribute
 user are typed from the root barrel.
 
 ```typescript
-import { getRumClient } from '@cues/sawdust/rum'
-import type { RumClient, RumUser } from '@cues/sawdust'
+import { getRumClient } from '@cues/sawdust-datadog/rum'
+import type { RumClient, RumUser } from '@cues/sawdust-datadog/rum'
 
 const client: RumClient = getRumClient(options)
 const anonymousUser: RumUser = { id, anonymousId, type: 'anonymous' }
@@ -273,7 +285,9 @@ client.setGlobalAttribute('authenticated', false)
 if (client.isEnabled()) logger.info('Datadog RUM initialized', { component: 'DatadogRum' })
 ```
 
-**Guidance:** Self-contained RUM subsystem. Full walkthrough in the [RUM guide](../guides/rum.md).
+**Guidance:** Self-contained RUM subsystem, now shipped from `@cues/sawdust-datadog`. Error-to-RUM
+forwarding is no longer automatic — opt in with `plugins: [datadogRumErrorPlugin()]`. Full
+walkthrough in the [RUM guide](../guides/rum.md).
 
 ---
 
@@ -306,7 +320,7 @@ needs an overridable logger.
 ```typescript
 import type { LogLevel } from '@cues/sawdust'
 import type { BaseLogger } from '@cues/sawdust'
-import type { RumClient, RumUser } from '@cues/sawdust'
+import type { RumClient, RumUser } from '@cues/sawdust-datadog/rum' // RUM types moved to the provider
 ```
 
 **Guidance:** Keep the type-from-root / runtime-from-`/logger` split consistent. Prefer

@@ -9,10 +9,15 @@ description: A runtime-agnostic logging toolkit for browser, Node.js, and worker
 
 **Sawdust is one logging API for every JavaScript runtime you ship.**
 
-`@cues/sawdust` is a runtime-agnostic logging + RUM toolkit built on
+`@cues/sawdust` is a runtime-agnostic logging toolkit built on
 [LogLayer](https://loglayer.dev). Import a single `logger`, call `.info()` / `.warn()` /
 `.error()`, and the right implementation runs whether your code executes in Node.js, the
 browser, or a background worker.
+
+Core is **provider-agnostic** — console, pretty, and Consola transports out of the box, and no
+vendor lock-in. Need Datadog logs, APM trace injection, or RUM? Add
+[`@cues/sawdust-datadog`](./concepts/providers.md) and wire it through the `extraTransports` /
+`plugins` seams.
 
 ```typescript
 import { logger } from '@cues/sawdust/logger'
@@ -43,8 +48,9 @@ on.
   correct `.node` / `.web` build resolves automatically through conditional exports.
 - **A singleton façade that upgrades in place** — import `logger` before it is configured;
   bootstrap later promotes it to a richer logger without breaking existing imports.
-- **Pluggable transports** — console, pretty terminal, Consola, Datadog server logs (+ APM
-  trace injection), Datadog browser logs, and RUM. Enable per environment.
+- **Pluggable transports** — console, pretty terminal, and Consola in core; Datadog server logs
+  (+ APM trace injection), Datadog browser logs, and RUM via the `@cues/sawdust-datadog`
+  provider. Enable per environment.
 - **Request-scoped context** — `withRequestContext` uses AsyncLocalStorage on Node to stamp
   every log with `requestId`, `userId`, and route automatically.
 - **A service locator** — shared libraries call `getLogger()` / `getRumClient()` and always

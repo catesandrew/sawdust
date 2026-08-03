@@ -6,18 +6,29 @@ description: The available LogLayer transports and their key options.
 
 # Transports
 
-Transports decide **where** logs go. Enable any combination under `transports` in
-`configureLogger`. Sawdust builds them on top of LogLayer.
+Transports decide **where** logs go. Sawdust splits them in two:
+
+- **Core transports** — `console`, `pretty`, `consola`. Configured under the `transports` object
+  in `configureLogger`. Built into `@cues/sawdust`, no extra install.
+- **Provider transports** — Datadog server/browser logs. Shipped as **factories** in the
+  separate `@cues/sawdust-datadog` package and wired through `extraTransports`. Core stays
+  provider-agnostic; see [Providers](../concepts/providers.md).
+
+All of them are built on top of LogLayer.
 
 ## Availability by runtime
 
-| Transport | Node | Browser | Worker | Purpose |
-|---|---|---|---|---|
-| `console` | ✅ | ✅ | ✅ | Native console / stdout / stderr. |
-| `pretty` | ✅ | ✅ | ✅ | Human-friendly terminal / dev-console output. |
-| `consola` | ✅ | ✅ | ✅ | [Consola](https://github.com/unjs/consola)-backed output. |
-| `datadog` | ✅ | — | ✅ | Datadog **server** logs intake. |
-| `datadogBrowser` | — | ✅ | — | Datadog **browser** logs SDK. |
+| Transport | Package / seam | Node | Browser | Worker | Purpose |
+|---|---|---|---|---|---|
+| `console` | core · `transports` | ✅ | ✅ | ✅ | Native console / stdout / stderr. |
+| `pretty` | core · `transports` | ✅ | ✅ | ✅ | Human-friendly terminal / dev-console output. |
+| `consola` | core · `transports` | ✅ | ✅ | ✅ | [Consola](https://github.com/unjs/consola)-backed output. |
+| `datadogTransport` | `@cues/sawdust-datadog` · `extraTransports` | ✅ | — | ✅ | Datadog **server** logs intake. |
+| `datadogBrowserTransport` | `@cues/sawdust-datadog/browser` · `extraTransports` | — | ✅ | — | Datadog **browser** logs SDK. |
+
+# Core transports
+
+Enable any combination under `transports` in `configureLogger`.
 
 ## `console`
 
@@ -61,41 +72,82 @@ consola: {
 }
 ```
 
-## `datadog` (server)
+# Provider transports (`@cues/sawdust-datadog`)
 
-```typescript
-datadog: {
-  enabled: true,
-  apiKey: process.env.DD_API_KEY,
-  enableInDev: false,
-  options: { service: 'orders-api', source: 'nodejs', ddtags: 'env:prod' },
-}
+Datadog no longer lives inside the `transports` object. Install the provider package and pass its
+factory results into `extraTransports` (and, for APM correlation, `plugins`).
+
+```bash
+pnpm add @cues/sawdust-datadog
 ```
 
-Pairs with **APM trace injection** so logs correlate to traces:
+## `datadogTransport` (server logs)
 
 ```typescript
-datadogTraceInjection: { enabled: true } // Node only
+import { datadogTransport } from '@cues/sawdust-datadog'
+
+extraTransports: [
+  datadogTransport({
+    service: 'orders-api',
+    logLevel: 'info',
+    apiKey: process.env.DD_API_KEY,
+    enableInDev: false,
+    options: { ddsource: 'nodejs', ddtags: 'env:prod' },
+  }),
+]
 ```
 
-## `datadogBrowser`
+Returns `undefined` when `apiKey` is missing; Sawdust skips falsy `extraTransports` entries.
+
+Pairs with **APM trace injection** (a plugin, not a transport) so logs correlate to traces:
+
+```typescript
+import ddTrace from 'dd-trace'
+import { datadogTraceInjectorPlugin } from '@cues/sawdust-datadog'
+
+plugins: [
+  datadogTraceInjectorPlugin({
+    apiKey: process.env.DD_API_KEY,
+    tracer: ddTrace.init(),
+    service: 'orders-api',
+    environment: 'production',
+  }),
+] // Node only; returns undefined without both apiKey and tracer
+```
+
+## `datadogBrowserTransport` (browser logs)
 
 Requires the optional peer dep `@datadog/browser-logs`.
 
 ```typescript
-datadogBrowser: {
-  enabled: !!window.__DATADOG_CLIENT_TOKEN__,
-  options: { forwardErrorsToLogs: true, service: 'my-web-app', sessionSampleRate: 100 },
-}
+import { datadogBrowserTransport } from '@cues/sawdust-datadog/browser'
+
+extraTransports: [
+  datadogBrowserTransport({
+    service: 'my-web-app',
+    environment: 'prod',
+    version: '1.0.0',
+    logLevel: 'info',
+    enabled: !!window.__DATADOG_CLIENT_TOKEN__,
+    init: {
+      clientToken: window.__DATADOG_CLIENT_TOKEN__,
+      forwardErrorsToLogs: true,
+      sessionSampleRate: 100,
+    },
+  }),
+]
 ```
+
+Returns `undefined` when `init.clientToken` is missing.
 
 ## RUM
 
 RUM is **not** a log transport — it is a separate browser subsystem reached through
-`@cues/sawdust/rum`. See the [RUM guide](../guides/rum.md). It requires the optional peer dep
-`@datadog/browser-rum`.
+`@cues/sawdust-datadog/rum`. See the [RUM guide](../guides/rum.md). It requires the optional peer
+dep `@datadog/browser-rum`. Error-to-RUM forwarding is opt-in via the `datadogRumErrorPlugin()`
+plugin.
 
 ## Merging overrides
 
-Provide a subset of any transport's options and Sawdust merges them over the defaults — you only
-specify what differs from the environment's baseline.
+Provide a subset of any core transport's options and Sawdust merges them over the defaults — you
+only specify what differs from the environment's baseline.

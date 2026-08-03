@@ -23,6 +23,7 @@ const sidebars: SidebarsConfig = {
       collapsed: false,
       items: [
         'concepts/architecture',
+        'concepts/providers',
         'concepts/sequence-flows',
         'concepts/singleton-scoring',
         'concepts/service-locator',
