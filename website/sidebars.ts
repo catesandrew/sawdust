@@ -31,6 +31,12 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: 'category',
+      label: 'Providers',
+      collapsed: false,
+      items: ['providers/datadog', 'providers/otel'],
+    },
+    {
+      type: 'category',
       label: 'Reference',
       items: [
         'reference/entry-points',
