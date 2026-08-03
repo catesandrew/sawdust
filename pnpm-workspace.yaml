@@ -1,5 +1,6 @@
 packages:
   - packages/*
+  - website
 
 # Version pins for the LogLayer stack, applied workspace-wide.
 overrides:
