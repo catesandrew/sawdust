@@ -1,0 +1,23 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "verbatimModuleSyntax": false,
+    "composite": false,
+    "noCheck": true,
+    "declaration": false,
+    "declarationMap": false,
+    "sourceMap": false,
+    "outDir": "dist/cjs",
+    "tsBuildInfoFile": "dist/cjs/tsconfig.tsbuildinfo"
+  },
+  "references": [],
+  "exclude": [
+    "src/**/*.test.ts",
+    "src/**/*.test.tsx",
+    "src/**/__tests__/**",
+    "src/**/__mocks__/**",
+    "src/**/__fixtures__/**"
+  ]
+}

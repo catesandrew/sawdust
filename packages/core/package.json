@@ -41,6 +41,7 @@
       "require": "./dist/cjs/types/*.js"
     },
     "./*": {
+      "types": "./dist/*.d.ts",
       "browser": "./dist/*.web.js",
       "node": {
         "import": "./dist/*.node.js",
