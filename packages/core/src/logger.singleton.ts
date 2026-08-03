@@ -348,11 +348,27 @@ export function featuresFromOptions(
   if (transports.pretty?.enabled) out.push('pretty')
   if (transports.console?.enabled) out.push('console')
   if (transports.consola?.enabled) out.push('consola')
-  if (env === 'node' && transports.datadog?.enabled) out.push('datadog')
-  if (env === 'web' && transports.datadogBrowser?.enabled)
-    out.push('datadogBrowser')
 
-  const ddTrace = env === 'node' ? !!opts.datadogTraceInjection?.enabled : false
+  // Datadog transports now arrive via `extraTransports` (from
+  // @cues/sawdust-datadog). Detect them by transport id.
+  const hasDatadogTransport = (opts.extraTransports ?? []).some(
+    (t) =>
+      typeof (t as { id?: unknown })?.id === 'string' &&
+      (t as { id: string }).id.includes('datadog'),
+  )
+  if (hasDatadogTransport) {
+    out.push(env === 'web' ? 'datadogBrowser' : 'datadog')
+  }
+
+  // Datadog APM trace injection now arrives via `plugins` (Node only). Detect it
+  // by plugin id.
+  const ddTrace =
+    env === 'node' &&
+    (opts.plugins ?? []).some(
+      (p) =>
+        typeof (p as { id?: unknown })?.id === 'string' &&
+        /trace|datadog/.test((p as { id: string }).id),
+    )
 
   return {
     transports: out,

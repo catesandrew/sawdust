@@ -151,16 +151,15 @@ describe('installIfBetter', () => {
 })
 
 describe('featuresFromOptions', () => {
-  it('derives feature flags based on transport configuration', () => {
+  it('derives feature flags from transports, extraTransports, and plugins', () => {
     const options: LoggerOptions = {
       transports: {
         console: { enabled: true },
         consola: { enabled: true },
         pretty: { enabled: false },
-        datadog: { enabled: true },
-        datadogBrowser: { enabled: true },
       },
-      datadogTraceInjection: { enabled: true, tracer: {} as any },
+      extraTransports: [{ id: 'datadog' } as any],
+      plugins: [{ id: 'datadog-apm-trace-injector' } as any],
     }
 
     expect(featuresFromOptions(options, 'node')).toEqual({

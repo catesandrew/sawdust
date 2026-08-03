@@ -1,17 +1,14 @@
 'use client'
 import 'client-only' // build-time guard: error if imported from server code
-import { datadogLogs } from '@datadog/browser-logs'
 import type { LogLayerPlugin } from '@loglayer/plugin'
 import type {
   LogLayerTransport,
   MessageDataType,
   RawLogEntry,
 } from '@loglayer/shared'
-import { DataDogBrowserLogsTransport } from '@loglayer/transport-datadog-browser-logs'
 import { LogLayer } from 'loglayer'
 import { createConsolaTransport } from './createConsolaTransport.web.js'
 import { createConsoleTransport } from './createConsoleTransport.web.js'
-import { createDatadogBrowserLogsTransport } from './createDatadogBrowserLogsTransport.js'
 import { createPrettyTransport } from './createPrettyTransport.js'
 import { createRuntimeTagPlugin } from './createRuntimeTagPlugin.js'
 import { SwappableLogger } from './logger.facade.js'
@@ -26,8 +23,7 @@ import {
   type LoggerMeta,
 } from './logger.singleton.js'
 import { setLogger } from './loggerLocator.web.js'
-import { mergeContext, sanitizeForLogging } from './loggerUtils.js'
-import { getRumClient } from './rum.web.js'
+import { mergeContext } from './loggerUtils.js'
 import { sanitizeRecord } from './sanitizeRecord.js'
 import { serializeError } from './serializeError.js'
 import type {
@@ -39,8 +35,6 @@ import type {
   LoggerOptions,
   LogLevelType,
 } from './types/index.js'
-
-let warnedAboutDatadogConsoleForwarding = false
 
 // Simple per-call context stack for the browser (emulates ALS semantics for runWithContext)
 const browserContextStack: Array<Record<string, any>> = []
@@ -60,20 +54,17 @@ const browserContextPlugin: LogLayerPlugin = {
 /**
  * Composes the set of browser-friendly transports based on user-supplied options.
  *
- * Instantiates Pretty, Consola, Console, and Datadog Browser transports when configured.
- * Tracks whether Datadog transport was created so we can initialise browser globals.
+ * Instantiates Pretty, Consola, and Console transports when configured, then
+ * appends any caller-provided `extraTransports` (e.g. the Datadog Browser Logs
+ * transport from @cues/sawdust-datadog).
  */
 function buildTransports(
   opts: LoggerOptions,
   {
     service,
-    environment,
-    version,
     logLevel,
   }: {
     service: string
-    environment: string
-    version: string
     logLevel: LogLevelType
   },
 ): BuildTransportsResult {
@@ -87,7 +78,6 @@ function buildTransports(
     pretty: false,
     ids: [] as string[],
   }
-  let consoleMirrorsEnabled = false
 
   // 1) Simple Pretty Terminal (great for local dev)
   if (t.pretty) {
@@ -97,14 +87,9 @@ function buildTransports(
         runtime: 'browser',
         logLevel,
       })
-    const prettyEnabled = t.pretty.enabled ?? true
-
     if (prettyTransport) {
       out.push(prettyTransport)
       created.pretty = true
-      if (prettyEnabled) {
-        consoleMirrorsEnabled = true
-      }
     }
   }
 
@@ -116,14 +101,9 @@ function buildTransports(
         service,
         logLevel,
       })
-    const consolaEnabled = t.consola.enabled ?? true
-
     if (consolaTransport) {
       out.push(consolaTransport)
       created.consola = true
-      if (consolaEnabled) {
-        consoleMirrorsEnabled = true
-      }
     }
   }
 
@@ -134,50 +114,9 @@ function buildTransports(
       createConsoleTransport(t.console, {
         logLevel,
       })
-    const consoleEnabled = t.console.enabled ?? true
-
     if (consoleTransport) {
       out.push(consoleTransport)
       created.console = true
-      if (consoleEnabled) {
-        consoleMirrorsEnabled = true
-      }
-    }
-  }
-
-  // 4) Datadog Browser Logs (disable Datadog console forwarding when we already mirror locally)
-  if (t.datadogBrowser) {
-    let datadogOptions = t.datadogBrowser
-
-    if (consoleMirrorsEnabled && t.datadogBrowser.init) {
-      datadogOptions = {
-        ...t.datadogBrowser,
-        init: {
-          ...t.datadogBrowser.init,
-          forwardConsoleLogs: undefined,
-        },
-      }
-
-      if (!warnedAboutDatadogConsoleForwarding) {
-        console.info(
-          '[sawdust] Disabled Datadog console forwarding because pretty/console/consola transports already mirror logs in the browser console.',
-        )
-        warnedAboutDatadogConsoleForwarding = true
-      }
-    }
-
-    const datadogBrowserTransport =
-      datadogOptions &&
-      createDatadogBrowserLogsTransport(datadogOptions, {
-        service,
-        environment,
-        version,
-        logLevel,
-      })
-
-    if (datadogBrowserTransport) {
-      out.push(datadogBrowserTransport)
-      created.datadogBrowser = true
     }
   }
 
@@ -193,23 +132,16 @@ function buildTransports(
   return { transports: out, created }
 }
 
-const hasDatadogBrowserTransport = (arr: LogLayerTransport[]): boolean =>
-  arr.some(
-    (t) =>
-      t instanceof DataDogBrowserLogsTransport ||
-      (t as any)?.id === 'datadog-browser',
-  )
-
-// - Transports: Consola, basic Console, Simple Pretty Terminal (browser mode),
-//   and Datadog Browser Logs (optional; can auto‑init if you pass
-//   transports.datadogBrowser.init).
+// - Transports: Consola, basic Console, Simple Pretty Terminal (browser mode).
+//   Datadog Browser Logs is provided via `extraTransports` (see
+//   @cues/sawdust-datadog `datadogBrowserTransport`).
 // - runWithContext works like a lightweight AsyncLocalStorage using a stack and
 //   a plugin that merges the current "run context" into ctx on each log.
 /**
  * Browser runtime implementation of the shared logger contract.
  *
- * Wraps a {@link LogLayer} instance and configures browser-oriented transports,
- * including optional Datadog Browser Logs integrations. Maintains a simple stack
+ * Wraps a {@link LogLayer} instance and configures browser-oriented transports.
+ * Maintains a simple stack
  * to provide `runWithContext` semantics similar to AsyncLocalStorage.
  *
  * ```ts
@@ -225,8 +157,6 @@ export class LoggerImpl implements LoggerImplementation {
   private inner: ILogLayer
   /** Effective options preserved for cloning or child loggers. */
   private readonly opts: LoggerOptions
-  /** Tracks whether Datadog Browser Logs were initialised so we can update global context. */
-  private datadogBrowserInitialized = false
 
   private readonly buildTransportsCreatedResult?: BuildTransportsCreatedResult
 
@@ -265,7 +195,6 @@ export class LoggerImpl implements LoggerImplementation {
 
       if (childCreated) {
         this.buildTransportsCreatedResult = childCreated
-        this.datadogBrowserInitialized = childCreated.datadogBrowser
       }
 
       return
@@ -273,16 +202,10 @@ export class LoggerImpl implements LoggerImplementation {
 
     const { transports, created } = buildTransports(options, {
       service: this.service,
-      version: this.version,
-      environment: this.environment,
       logLevel: options.defaultLevel ?? 'info',
     })
 
     this.buildTransportsCreatedResult = created
-
-    // Prefer explicit creation flag; fall back to inspection for resilience
-    this.datadogBrowserInitialized =
-      created.datadogBrowser || hasDatadogBrowserTransport(transports)
 
     const plugins: LogLayerPlugin[] = [
       // browserContextPlugin,
@@ -312,13 +235,6 @@ export class LoggerImpl implements LoggerImplementation {
       ...(options.defaultContext ? options.defaultContext : {}),
     }
     this.inner.withContext(baseMetadata)
-
-    if (this.datadogBrowserInitialized) {
-      const context = this.getContext()
-      if (Object.keys(context || {}).length > 0) {
-        datadogLogs.setGlobalContext(sanitizeRecord(context) ?? {})
-      }
-    }
   }
 
   // ----- helpers we add (mirrors node)
@@ -340,16 +256,9 @@ export class LoggerImpl implements LoggerImplementation {
   }
 
   // ----- proxy everything to LogLayer
-  /**
-   * Adds contextual metadata to the underlying logger and updates Datadog global context when active.
-   */
+  /** Adds contextual metadata to the underlying logger. */
   withContext(ctx: Record<string, any>): LoggerImplementation {
     this.inner.withContext(ctx)
-
-    if (this.datadogBrowserInitialized) {
-      datadogLogs.setGlobalContext(sanitizeRecord(this.getContext()) ?? {})
-    }
-
     return this
   }
 
@@ -500,9 +409,6 @@ export class LoggerImpl implements LoggerImplementation {
   ): void
   public trace(...args: Array<MessageDataType | Error | LogContext>): void {
     const { messages, err, context } = this.parseArgs(args)
-    if (err) {
-      this.forwardErrorToRum(err, messages, context)
-    }
     const target = this.prepareLogTarget(err, context)
     target.trace(...messages)
   }
@@ -517,9 +423,6 @@ export class LoggerImpl implements LoggerImplementation {
   ): void
   public debug(...args: Array<MessageDataType | Error | LogContext>): void {
     const { messages, err, context } = this.parseArgs(args)
-    if (err) {
-      this.forwardErrorToRum(err, messages, context)
-    }
     const target = this.prepareLogTarget(err, context)
     target.debug(...messages)
   }
@@ -534,9 +437,6 @@ export class LoggerImpl implements LoggerImplementation {
   ): void
   public info(...args: Array<MessageDataType | Error | LogContext>): void {
     const { messages, err, context } = this.parseArgs(args)
-    if (err) {
-      this.forwardErrorToRum(err, messages, context)
-    }
     const target = this.prepareLogTarget(err, context)
     target.info(...messages)
   }
@@ -551,9 +451,6 @@ export class LoggerImpl implements LoggerImplementation {
   ): void
   public warn(...args: Array<MessageDataType | Error | LogContext>): void {
     const { messages, err, context } = this.parseArgs(args)
-    if (err) {
-      this.forwardErrorToRum(err, messages, context)
-    }
     const target = this.prepareLogTarget(err, context)
     target.warn(...messages)
   }
@@ -568,9 +465,6 @@ export class LoggerImpl implements LoggerImplementation {
   ): void
   public error(...args: Array<MessageDataType | Error | LogContext>): void {
     const { messages, err, context } = this.parseArgs(args)
-    if (err) {
-      this.forwardErrorToRum(err, messages, context)
-    }
     const target = this.prepareLogTarget(err, context)
     target.error(...messages)
   }
@@ -585,9 +479,6 @@ export class LoggerImpl implements LoggerImplementation {
   ): void
   public fatal(...args: Array<MessageDataType | Error | LogContext>): void {
     const { messages, err, context } = this.parseArgs(args)
-    if (err) {
-      this.forwardErrorToRum(err, messages, context)
-    }
     const target = this.prepareLogTarget(err, context)
     target.fatal(...messages)
   }
@@ -634,57 +525,6 @@ export class LoggerImpl implements LoggerImplementation {
       target = target.withMetadata(context)
     }
     return target
-  }
-
-  private forwardErrorToRum(
-    err: Error,
-    messages: MessageDataType[],
-    context?: LogContext,
-  ): void {
-    try {
-      const rum = getRumClient()
-      if (!rum?.isEnabled()) {
-        return
-      }
-      rum
-
-      const serializedMessages = messages
-        .map((message) => {
-          if (typeof message === 'string') {
-            return message
-          }
-          if (
-            typeof message === 'number' ||
-            typeof message === 'boolean' ||
-            typeof message === 'bigint'
-          ) {
-            return String(message)
-          }
-          // if (message instanceof Error) {
-          //   return `${message.name}: ${message.message}`
-          // }
-          const sanitized = sanitizeForLogging(message)
-          return sanitized
-        })
-        .filter((value) => value !== undefined)
-
-      const baseContext = sanitizeRecord(context)
-      const rumContext: Record<string, unknown> = baseContext
-        ? { ...baseContext }
-        : {}
-
-      if (serializedMessages.length > 0) {
-        rumContext.logMessages = serializedMessages
-      }
-
-      if (Object.keys(rumContext).length > 0) {
-        rum.addError(err, rumContext as any)
-      } else {
-        rum.addError(err)
-      }
-    } catch {
-      // RUM forwarding should never block logger output
-    }
   }
 }
 
@@ -753,12 +593,19 @@ export const logger: LoggerImplementation = new SwappableLogger()
  *
  * @example
  * ```ts
+ * import { datadogBrowserTransport } from '@cues/sawdust-datadog/browser'
  * configureLogger({
  *   prefix: '[UI]',
- *   transports: {
- *     console: { enabled: true },
- *     datadogBrowser: { enabled: true, options: { forwardErrorsToLogs: true } },
- *   },
+ *   transports: { console: { enabled: true } },
+ *   extraTransports: [
+ *     datadogBrowserTransport({
+ *       service: 'web',
+ *       environment: 'prod',
+ *       version: '1.0.0',
+ *       logLevel: 'info',
+ *       init: { clientToken: 'pub...' },
+ *     }),
+ *   ],
  * }, { stage: 'final', id: 'web:final' })
  * ```
  */

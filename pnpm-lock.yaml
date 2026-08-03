@@ -37,9 +37,6 @@ importers:
       '@loglayer/plugin':
         specifier: 2.1.6
         version: 2.1.6
-      '@loglayer/plugin-datadog-apm-trace-injector':
-        specifier: ^1.0.7
-        version: 1.0.16
       '@loglayer/shared':
         specifier: 2.5.3
         version: 2.5.3
@@ -49,12 +46,6 @@ importers:
       '@loglayer/transport-consola':
         specifier: 2.1.7
         version: 2.1.7(consola@3.4.2)
-      '@loglayer/transport-datadog':
-        specifier: 3.2.5
-        version: 3.2.5
-      '@loglayer/transport-datadog-browser-logs':
-        specifier: 2.2.8
-        version: 2.2.8(@datadog/browser-logs@6.33.0)
       '@loglayer/transport-simple-pretty-terminal':
         specifier: 2.2.8
         version: 2.2.8
@@ -64,6 +55,49 @@ importers:
       consola:
         specifier: ^3.4.2
         version: 3.4.2
+      loglayer:
+        specifier: 6.9.1
+        version: 6.9.1
+      serialize-error:
+        specifier: ^12.0.0
+        version: 12.0.0
+    devDependencies:
+      '@biomejs/biome':
+        specifier: ^2.5.5
+        version: 2.5.6
+      '@types/node':
+        specifier: ^20.14.0
+        version: 20.19.43
+      jsdom:
+        specifier: ^26.1.0
+        version: 26.1.0
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+      vitest:
+        specifier: ^3.0.0
+        version: 3.2.7(@types/node@20.19.43)(jsdom@26.1.0)
+
+  packages/datadog:
+    dependencies:
+      '@loglayer/plugin':
+        specifier: 2.1.6
+        version: 2.1.6
+      '@loglayer/plugin-datadog-apm-trace-injector':
+        specifier: ^1.0.7
+        version: 1.0.16
+      '@loglayer/shared':
+        specifier: 2.5.3
+        version: 2.5.3
+      '@loglayer/transport':
+        specifier: 2.3.4
+        version: 2.3.4
+      '@loglayer/transport-datadog':
+        specifier: 3.2.5
+        version: 3.2.5
+      '@loglayer/transport-datadog-browser-logs':
+        specifier: 2.2.8
+        version: 2.2.8(@datadog/browser-logs@6.33.0)
       datadog-transport-common:
         specifier: ^3.0.2
         version: 3.0.2
@@ -73,9 +107,6 @@ importers:
       loglayer:
         specifier: 6.9.1
         version: 6.9.1
-      serialize-error:
-        specifier: ^12.0.0
-        version: 12.0.0
       type-fest:
         specifier: ^5.8.0
         version: 5.8.0
@@ -83,6 +114,9 @@ importers:
       '@biomejs/biome':
         specifier: ^2.5.5
         version: 2.5.6
+      '@cues/sawdust':
+        specifier: workspace:*
+        version: link:../core
       '@datadog/browser-logs':
         specifier: ^6.30.1
         version: 6.33.0(@datadog/browser-rum@6.33.0)

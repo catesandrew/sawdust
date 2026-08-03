@@ -1,7 +1,7 @@
 {
   "name": "@cues/sawdust",
   "version": "0.1.0",
-  "description": "Runtime-agnostic logging toolkit built on LogLayer — Node and browser transports, Datadog logs/RUM/APM integration, request-scoped context, and structured error serialization.",
+  "description": "Runtime-agnostic logging toolkit built on LogLayer — Node and browser console/consola/pretty transports, request-scoped context, and structured error serialization. Datadog logs/RUM/APM live in @cues/sawdust-datadog.",
   "license": "MIT",
   "type": "module",
   "main": "./dist/cjs/index.js",
@@ -50,37 +50,17 @@
   },
   "dependencies": {
     "@loglayer/plugin": "^2.1.6",
-    "@loglayer/plugin-datadog-apm-trace-injector": "^1.0.7",
     "@loglayer/shared": "^2.5.3",
     "@loglayer/transport": "^2.3.4",
     "@loglayer/transport-consola": "^2.1.7",
-    "@loglayer/transport-datadog": "^3.2.5",
-    "@loglayer/transport-datadog-browser-logs": "^2.2.8",
     "@loglayer/transport-simple-pretty-terminal": "^2.2.8",
     "client-only": "^0.0.1",
     "consola": "^3.4.2",
-    "datadog-transport-common": "^3.0.2",
-    "dd-trace": "^5.81.0",
     "loglayer": "^6.9.1",
-    "serialize-error": "^12.0.0",
-    "type-fest": "^5.8.0"
-  },
-  "peerDependencies": {
-    "@datadog/browser-logs": "*",
-    "@datadog/browser-rum": "*"
-  },
-  "peerDependenciesMeta": {
-    "@datadog/browser-logs": {
-      "optional": true
-    },
-    "@datadog/browser-rum": {
-      "optional": true
-    }
+    "serialize-error": "^12.0.0"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.5",
-    "@datadog/browser-logs": "^6.30.1",
-    "@datadog/browser-rum": "^6.30.1",
     "@types/node": "^20.14.0",
     "jsdom": "^26.1.0",
     "typescript": "^5.9.3",

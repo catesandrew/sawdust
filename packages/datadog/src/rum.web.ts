@@ -1,5 +1,7 @@
+import { sanitizeForLogging } from '@cues/sawdust'
 import { datadogRum, type RumInitConfiguration } from '@datadog/browser-rum'
-import { sanitizeForLogging } from './loggerUtils.js'
+import type { LogLayerPlugin } from '@loglayer/plugin'
+import { makeRumErrorPlugin } from './makeRumErrorPlugin.js'
 import {
   getRumClient as getRumInstance,
   setRumClient as setRumInstance,
@@ -664,5 +666,13 @@ export const getRumClient = (options?: DatadogRumOptions): RumClient => {
 export const setRumClient = (client: RumClient): void => {
   setRumInstance(client)
 }
+
+/**
+ * LogLayer plugin that forwards error-bearing logs to Datadog RUM via
+ * `getRumClient().addError`. Opt-in replacement for the former hardcoded
+ * browser error-forwarding path; register it through the logger `plugins` seam.
+ */
+export const datadogRumErrorPlugin = (): LogLayerPlugin =>
+  makeRumErrorPlugin(getRumClient)
 
 export { resetRumClientLocator } from './rumLocator.web.js'

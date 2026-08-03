@@ -4,8 +4,6 @@ import { LogLayer } from 'loglayer'
 import { AsyncLocalStorageContextManager } from './AsyncLocalStorageContextManager.js'
 import { createConsolaTransport } from './createConsolaTransport.node.js'
 import { createConsoleTransport } from './createConsoleTransport.node.js'
-import { createDatadogTraceInjectorPlugin } from './createDatadogTraceInjectorPlugin.js'
-import { createDatadogTransport } from './createDatadogTransport.js'
 import { createPrettyTransport } from './createPrettyTransport.js'
 import { createRuntimeTagPlugin } from './createRuntimeTagPlugin.js'
 import { SwappableLogger } from './logger.facade.js'
@@ -26,7 +24,6 @@ import { serializeError } from './serializeError.js'
 import type {
   BuildTransportsCreatedResult,
   BuildTransportsResult,
-  DatadogDebugEvent,
   ILogLayer,
   LogContext,
   LoggerImplementation,
@@ -57,19 +54,17 @@ const asyncContextPlugin: LogLayerPlugin = {
 /**
  * Composes the transport list for Node usage based on supplied logger options.
  *
- * Enables Pretty, Consola, Console, and Datadog transports when configured.
- * Datadog transport receives the `onDebug` callback so transport errors can be surfaced.
+ * Enables Pretty, Consola, and Console transports when configured, then appends
+ * any caller-provided `extraTransports` (e.g. Datadog from @cues/sawdust-datadog).
  */
 function buildTransports(
   opts: LoggerOptions,
   {
     service,
     logLevel,
-    onDebug,
   }: {
     service: string
     logLevel: LogLevelType
-    onDebug?: (event: DatadogDebugEvent) => void
   },
 ): BuildTransportsResult {
   const t = opts.transports ?? {}
@@ -127,22 +122,6 @@ function buildTransports(
     }
   }
 
-  // 4) Datadog (server-side)
-  if (t.datadog) {
-    const datadogTransport =
-      t.datadog &&
-      createDatadogTransport(t.datadog, {
-        service,
-        logLevel,
-        onDebug,
-      })
-
-    if (datadogTransport) {
-      out.push(datadogTransport)
-      created.datadog = true
-    }
-  }
-
   if (opts.extraTransports?.length) {
     for (const custom of opts.extraTransports) {
       if (custom) {
@@ -157,16 +136,13 @@ function buildTransports(
 
 // - Async context (ALS) integration via an internal plugin that merges AsyncLocalStorage data into the log context field (ctx) for every entry.
 //   Use runWithContext({requestId}, () => { ... }) and any logs inside will include that context automatically.
-// - Datadog APM trace injection plugin (optional) powered by your dd-trace tracer instance.
-// - Transports: Consola, basic Console, Simple Pretty Terminal (dev‑friendly), and Datadog server transport.
-//
-// ⚠️ dd-trace import order: As Datadog recommends, initialize dd-trace very
-// early in your app before creating the logger so the plugin can capture active
-// spans.
+// - Transports: Consola, basic Console, Simple Pretty Terminal (dev‑friendly).
+//   Datadog server logs + APM trace injection are provided via `extraTransports`
+//   / `plugins` (see @cues/sawdust-datadog).
 /**
  * Node runtime implementation of the shared logger contract.
  *
- * Wraps a {@link LogLayer} instance, wires up Node transports (Console, Consola, Datadog, Pretty),
+ * Wraps a {@link LogLayer} instance, wires up Node transports (Console, Consola, Pretty),
  * and exposes AsyncLocalStorage-backed helpers so request-scoped metadata flows automatically.
  *
  * ```ts
@@ -235,7 +211,6 @@ export class LoggerImpl implements LoggerImplementation {
     const { transports, created } = buildTransports(options, {
       service: this.service,
       logLevel: options.defaultLevel ?? 'info',
-      onDebug: this.safeEmitDatadogDebug,
     })
 
     this.buildTransportsCreatedResult = created
@@ -245,28 +220,6 @@ export class LoggerImpl implements LoggerImplementation {
       createRuntimeTagPlugin('Server'),
       ...(options.plugins ?? []),
     ]
-
-    // Optionally enable Datadog APM trace injection (requires dd-trace,
-    // initialized early in app bootstrap)
-    if (
-      options.datadogTraceInjection?.enabled &&
-      options.datadogTraceInjection.tracer &&
-      options.transports?.datadog
-    ) {
-      const datadogTraceInjectorPlugin = createDatadogTraceInjectorPlugin(
-        options.transports?.datadog,
-        options.datadogTraceInjection,
-        {
-          environment: this.environment,
-          service: this.service,
-          onError: this.safeEmitDatadogDebug,
-        },
-      )
-
-      if (datadogTraceInjectorPlugin) {
-        plugins.push(datadogTraceInjectorPlugin)
-      }
-    }
 
     this.inner = new LogLayer({
       prefix: options.prefix,
@@ -587,19 +540,6 @@ export class LoggerImpl implements LoggerImplementation {
     }
     return target
   }
-
-  /** Forwards Datadog debug events to the configured transport `onDebug` handler without throwing. */
-  private safeEmitDatadogDebug(event: DatadogDebugEvent): void {
-    if (!this.opts.transports?.datadog?.onDebug) {
-      return
-    }
-
-    try {
-      this.opts.transports.datadog.onDebug(event)
-    } catch {
-      // Swallow debug errors to avoid impacting logging
-    }
-  }
 }
 
 /**
@@ -665,13 +605,12 @@ export const logger: LoggerImplementation = new SwappableLogger()
  *
  * @example
  * ```ts
+ * import { datadogTransport, datadogTraceInjectorPlugin } from '@cues/sawdust-datadog'
  * configureLogger({
  *   prefix: '[Server]',
- *   transports: {
- *     console: { enabled: true },
- *     datadog: { enabled: true, options: { service: 'environment-manager-ui' } },
- *   },
- *   datadogTraceInjection: { enabled: true, tracer: ddTrace.init() },
+ *   transports: { console: { enabled: true } },
+ *   extraTransports: [datadogTransport({ service: 'env-manager', logLevel: 'info', apiKey, options: {} })],
+ *   plugins: [datadogTraceInjectorPlugin({ apiKey, tracer: ddTrace.init() })],
  * }, { id: 'node:final', stage: 'final' })
  * ```
  */

@@ -1,4 +1,4 @@
-import type { LogEntry } from './LogEntry.js'
+import type { LogEntry } from '@cues/sawdust'
 
 /**
  * Debug telemetry emitted by the Datadog transports to help diagnose delivery

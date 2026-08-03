@@ -1,0 +1,92 @@
+{
+  "name": "@cues/sawdust-datadog",
+  "version": "0.1.0",
+  "description": "Datadog logs, RUM, and APM trace-injection provider for @cues/sawdust — server + browser transports and plugins wired through the sawdust extraTransports/plugins seams.",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/cjs/index.js"
+    },
+    "./browser": {
+      "types": "./dist/browser.d.ts",
+      "import": "./dist/browser.js",
+      "require": "./dist/cjs/browser.js"
+    },
+    "./rum": {
+      "types": "./dist/rum.d.ts",
+      "browser": "./dist/rum.web.js",
+      "node": {
+        "import": "./dist/rum.node.js",
+        "require": "./dist/cjs/rum.node.js"
+      },
+      "import": "./dist/rum.js",
+      "require": "./dist/cjs/rum.js"
+    },
+    "./types": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/types/index.js",
+      "require": "./dist/cjs/types/index.js"
+    },
+    "./types/*": {
+      "types": "./dist/types/*.d.ts",
+      "import": "./dist/types/*.js",
+      "require": "./dist/cjs/types/*.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "!dist/tsconfig.tsbuildinfo",
+    "!dist/cjs/tsconfig.tsbuildinfo"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json && tsc -p tsconfig.cjs.json && node ./scripts/postbuild-cjs.mjs",
+    "lint": "biome check .",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@loglayer/plugin": "^2.1.6",
+    "@loglayer/plugin-datadog-apm-trace-injector": "^1.0.7",
+    "@loglayer/shared": "^2.5.3",
+    "@loglayer/transport": "^2.3.4",
+    "@loglayer/transport-datadog": "^3.2.5",
+    "@loglayer/transport-datadog-browser-logs": "^2.2.8",
+    "datadog-transport-common": "^3.0.2",
+    "dd-trace": "^5.81.0",
+    "loglayer": "^6.9.1",
+    "type-fest": "^5.8.0"
+  },
+  "peerDependencies": {
+    "@cues/sawdust": "workspace:*",
+    "@datadog/browser-logs": "*",
+    "@datadog/browser-rum": "*"
+  },
+  "peerDependenciesMeta": {
+    "@datadog/browser-logs": {
+      "optional": true
+    },
+    "@datadog/browser-rum": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.5",
+    "@cues/sawdust": "workspace:*",
+    "@datadog/browser-logs": "^6.30.1",
+    "@datadog/browser-rum": "^6.30.1",
+    "@types/node": "^20.14.0",
+    "jsdom": "^26.1.0",
+    "typescript": "^5.9.3",
+    "vitest": "^3.0.0"
+  }
+}

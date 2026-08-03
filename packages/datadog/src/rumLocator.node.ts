@@ -1,4 +1,4 @@
-import { createLocator } from './createLocator.js'
+import { createLocator } from '@cues/sawdust'
 import { createNoopRumClient } from './rumNoop.js'
 import type { RumClient, RumLocator } from './types/index.js'
 

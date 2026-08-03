@@ -38,27 +38,8 @@ vi.mock('loglayer', () => ({
   LogLayer: vi.fn(() => mockInner),
 }))
 
-vi.mock('@datadog/browser-logs', () => ({
-  datadogLogs: {
-    init: vi.fn(),
-    setGlobalContext: vi.fn(),
-    setGlobalContextProperty: vi.fn(),
-    removeGlobalContextProperty: vi.fn(),
-    createLogger: vi.fn(() => ({ mocked: true })),
-    logger: { mocked: true },
-  },
-}))
-
-vi.mock('@loglayer/transport-datadog-browser-logs', () => ({
-  DataDogBrowserLogsTransport: vi.fn(),
-}))
-
 vi.mock('../createPrettyTransport', () => ({
   createPrettyTransport: vi.fn(),
-}))
-
-vi.mock('../createDatadogBrowserLogsTransport', () => ({
-  createDatadogBrowserLogsTransport: vi.fn(),
 }))
 
 vi.mock('../createRuntimeTagPlugin', () => ({
@@ -71,10 +52,6 @@ vi.mock('../createConsoleTransport.web', () => ({
 
 vi.mock('../createConsolaTransport.web', () => ({
   createConsolaTransport: vi.fn(() => ({ id: 'consola' })),
-}))
-
-vi.mock('../rum.web', () => ({
-  getRumClient: vi.fn(() => ({ addError: vi.fn() })),
 }))
 
 const installIfBetter = vi.fn((candidate: any) => ({

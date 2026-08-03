@@ -1,4 +1,3 @@
-import type { DatadogTraceInjectionOptions } from './DatadogTraceInjectionOptions.js'
 import type { LogContext } from './LogContext.js'
 import type { LoggerTransportsOptions } from './LoggerTransportsOptions.js'
 import type {
@@ -36,9 +35,6 @@ export interface LoggerOptions {
 
   /** Optional additional transports appended after the built-ins. */
   extraTransports?: LogLayerTransport[]
-
-  /** Node only Datadog trace injection plugin. */
-  datadogTraceInjection?: DatadogTraceInjectionOptions
 
   /** Optional id used when we expose the underlying logger via getLoggerInstance. */
   id?: string

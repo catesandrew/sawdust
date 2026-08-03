@@ -1,6 +1,6 @@
 import { datadogLogs } from '@datadog/browser-logs'
 import { DataDogBrowserLogsTransport } from '@loglayer/transport-datadog-browser-logs'
-import { toConsoleApis } from './loggerUtils.js'
+import { toConsoleApis } from './toConsoleApis.js'
 import type {
   DatadogBrowserTransportOptions,
   LogLevelType,

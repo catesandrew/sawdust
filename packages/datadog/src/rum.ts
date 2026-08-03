@@ -1,3 +1,5 @@
+import type { LogLayerPlugin } from '@loglayer/plugin'
+import { makeRumErrorPlugin } from './makeRumErrorPlugin.js'
 import {
   getRumClient as getRumInstance,
   resetRumClientLocator,
@@ -43,4 +45,24 @@ export const setRumClient = (client: RumClient): void => {
   setRumInstance(client)
 }
 
+/**
+ * LogLayer plugin that forwards error-bearing logs to the shared RUM client.
+ * Uses the noop client by default; install a concrete client via
+ * {@link setRumClient} to activate forwarding.
+ */
+export const datadogRumErrorPlugin = (): LogLayerPlugin =>
+  makeRumErrorPlugin(getRumClient)
+
+export type {
+  DatadogRumOptions,
+  RumActionContext,
+  RumClient,
+  RumContext,
+  RumDebugEvent,
+  RumImplementation,
+  RumInitOptions,
+  RumLocator,
+  RumUser,
+  Site,
+} from './types/index.js'
 export { resetRumClientLocator }

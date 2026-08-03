@@ -1,10 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import {
-  mergeContext,
-  sanitizeForLogging,
-  toConsoleApis,
-} from '../loggerUtils.js'
+import { mergeContext, sanitizeForLogging } from '../loggerUtils.js'
 
 describe('mergeContext', () => {
   it('returns undefined when both contexts are missing', () => {
@@ -82,23 +78,5 @@ describe('sanitizeForLogging', () => {
     expect(sanitized).toEqual({ keep: 'value' })
     expect('fn' in sanitized).toBe(false)
     expect('sym' in sanitized).toBe(false)
-  })
-})
-
-describe('toConsoleApis', () => {
-  it('returns all console api names when configured with "all"', () => {
-    expect(toConsoleApis('all')).toEqual(['error', 'warn', 'debug', 'info'])
-  })
-
-  it('maps supported log levels to console API names', () => {
-    expect(toConsoleApis(['debug', 'log', 'warn'])).toEqual([
-      'debug',
-      'log',
-      'warn',
-    ])
-  })
-
-  it('returns an empty array when levels are missing', () => {
-    expect(toConsoleApis()).toEqual([])
   })
 })
