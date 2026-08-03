@@ -1,102 +1,28 @@
 {
-  "name": "@cues/sawdust",
-  "version": "0.1.0",
-  "description": "Runtime-agnostic logging toolkit built on LogLayer — Node and browser transports, Datadog logs/RUM/APM integration, request-scoped context, and structured error serialization.",
+  "name": "sawdust-monorepo",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Monorepo for @cues/sawdust — runtime-agnostic logging + RUM toolkit.",
   "license": "MIT",
   "type": "module",
-  "main": "./dist/cjs/index.js",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/cjs/index.js"
-    },
-    "./types": {
-      "types": "./dist/types/index.d.ts",
-      "import": "./dist/types/index.js",
-      "require": "./dist/cjs/types/index.js"
-    },
-    "./types/*": {
-      "types": "./dist/types/*.d.ts",
-      "import": "./dist/types/*.js",
-      "require": "./dist/cjs/types/*.js"
-    },
-    "./*": {
-      "browser": "./dist/*.web.js",
-      "node": {
-        "import": "./dist/*.node.js",
-        "require": "./dist/cjs/*.node.js"
-      },
-      "import": "./dist/*.js",
-      "require": "./dist/cjs/*.js"
-    },
-    "./package.json": "./package.json"
-  },
-  "files": [
-    "dist",
-    "!dist/tsconfig.tsbuildinfo",
-    "!dist/cjs/tsconfig.tsbuildinfo"
-  ],
-  "publishConfig": {
-    "access": "restricted"
+  "packageManager": "pnpm@10.33.0",
+  "engines": {
+    "node": ">=18"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json && tsc -p tsconfig.cjs.json && node ./scripts/postbuild-cjs.mjs",
-    "lint": "biome check .",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "vitest run"
-  },
-  "dependencies": {
-    "@loglayer/plugin": "^2.1.6",
-    "@loglayer/plugin-datadog-apm-trace-injector": "^1.0.7",
-    "@loglayer/shared": "^2.5.3",
-    "@loglayer/transport": "^2.3.4",
-    "@loglayer/transport-consola": "^2.1.7",
-    "@loglayer/transport-datadog": "^3.2.5",
-    "@loglayer/transport-datadog-browser-logs": "^2.2.8",
-    "@loglayer/transport-simple-pretty-terminal": "^2.2.8",
-    "client-only": "^0.0.1",
-    "consola": "^3.4.2",
-    "datadog-transport-common": "^3.0.2",
-    "dd-trace": "^5.81.0",
-    "loglayer": "^6.9.1",
-    "serialize-error": "^12.0.0",
-    "type-fest": "^5.8.0"
-  },
-  "peerDependencies": {
-    "@datadog/browser-logs": "*",
-    "@datadog/browser-rum": "*"
-  },
-  "peerDependenciesMeta": {
-    "@datadog/browser-logs": {
-      "optional": true
-    },
-    "@datadog/browser-rum": {
-      "optional": true
-    }
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "typecheck": "turbo run typecheck",
+    "lint": "turbo run lint",
+    "lint:all": "biome check .",
+    "changeset": "changeset",
+    "version-packages": "changeset version",
+    "release": "turbo run build && changeset publish"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.5",
-    "@datadog/browser-logs": "^6.30.1",
-    "@datadog/browser-rum": "^6.30.1",
-    "@types/node": "^20.14.0",
-    "jsdom": "^26.1.0",
-    "typescript": "^5.9.3",
-    "vitest": "^3.0.0"
-  },
-  "pnpm": {
-    "overrides": {
-      "@loglayer/shared": "2.5.3",
-      "@loglayer/transport": "2.3.4",
-      "@loglayer/plugin": "2.1.6",
-      "@loglayer/context-manager": "1.1.6",
-      "@loglayer/transport-consola": "2.1.7",
-      "@loglayer/transport-datadog": "3.2.5",
-      "@loglayer/transport-datadog-browser-logs": "2.2.8",
-      "@loglayer/transport-simple-pretty-terminal": "2.2.8",
-      "loglayer": "6.9.1"
-    }
+    "@changesets/cli": "^2.27.9",
+    "turbo": "^2.3.0",
+    "typescript": "^5.9.3"
   }
 }

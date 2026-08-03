@@ -1,0 +1,14 @@
+packages:
+  - packages/*
+
+# Version pins for the LogLayer stack, applied workspace-wide.
+overrides:
+  '@loglayer/shared': 2.5.3
+  '@loglayer/transport': 2.3.4
+  '@loglayer/plugin': 2.1.6
+  '@loglayer/context-manager': 1.1.6
+  '@loglayer/transport-consola': 2.1.7
+  '@loglayer/transport-datadog': 3.2.5
+  '@loglayer/transport-datadog-browser-logs': 2.2.8
+  '@loglayer/transport-simple-pretty-terminal': 2.2.8
+  loglayer: 6.9.1
