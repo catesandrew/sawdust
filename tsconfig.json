@@ -5,6 +5,7 @@
     { "path": "packages/core" },
     { "path": "packages/datadog" },
     { "path": "packages/otel" },
-    { "path": "packages/react" }
+    { "path": "packages/react" },
+    { "path": "packages/angular" }
   ]
 }

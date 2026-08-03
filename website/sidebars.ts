@@ -15,6 +15,7 @@ const sidebars: SidebarsConfig = {
         'guides/request-scope',
         'guides/rum',
         'guides/react',
+        'guides/angular',
         'guides/testing',
       ],
     },

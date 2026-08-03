@@ -1,0 +1,62 @@
+{
+  "name": "@cues/sawdust-angular",
+  "version": "0.1.0",
+  "description": "Angular integration for @cues/sawdust — SSR-safe provideSawdustLogger, injectLogger, and dependency-injection helpers via functional providers.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/catesandrew/sawdust.git",
+    "directory": "packages/angular"
+  },
+  "homepage": "https://catesandrew.github.io/sawdust/",
+  "bugs": "https://github.com/catesandrew/sawdust/issues",
+  "keywords": [
+    "angular",
+    "logging",
+    "logger",
+    "loglayer",
+    "sawdust",
+    "dependency-injection",
+    "ssr"
+  ],
+  "type": "module",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/cjs/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "!dist/tsconfig.tsbuildinfo",
+    "!dist/cjs/tsconfig.tsbuildinfo"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json && tsc -p tsconfig.cjs.json && node ./scripts/postbuild-cjs.mjs",
+    "lint": "biome check .",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run"
+  },
+  "peerDependencies": {
+    "@angular/core": ">=16",
+    "@cues/sawdust": "workspace:*"
+  },
+  "devDependencies": {
+    "@angular/core": "^19.0.0",
+    "@biomejs/biome": "^2.5.5",
+    "@cues/sawdust": "workspace:*",
+    "@types/node": "^20.14.0",
+    "rxjs": "^7.8.1",
+    "typescript": "^5.9.3",
+    "vitest": "^3.0.0",
+    "zone.js": "^0.15.0"
+  }
+}
