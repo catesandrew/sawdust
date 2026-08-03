@@ -2,6 +2,8 @@
 
 Runtime-agnostic logging toolkit for shared browser, Node.js, and worker runtimes with singleton-driven orchestration and pluggable transports, built on [LogLayer](https://loglayer.dev).
 
+📖 **Documentation:** <https://catesandrew.github.io/sawdust/> — getting started, guides, architecture with sequence diagrams, and the full pattern catalog. Source lives in [`website/`](./website).
+
 ## Features
 
 - Unified logging API shared across Node.js, browsers, and background workers.

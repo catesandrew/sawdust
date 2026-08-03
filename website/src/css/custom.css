@@ -1,0 +1,138 @@
+/**
+ * Sawdust theme — warm wood-tone accents on a clean slate.
+ */
+
+:root {
+  --ifm-color-primary: #b5651d;
+  --ifm-color-primary-dark: #a35b1a;
+  --ifm-color-primary-darker: #9a5619;
+  --ifm-color-primary-darkest: #7f4715;
+  --ifm-color-primary-light: #c77122;
+  --ifm-color-primary-lighter: #cc7828;
+  --ifm-color-primary-lightest: #d68a45;
+  --ifm-code-font-size: 95%;
+  --ifm-font-family-base: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+}
+
+[data-theme='dark'] {
+  --ifm-color-primary: #e0a15e;
+  --ifm-color-primary-dark: #d98f42;
+  --ifm-color-primary-darker: #d68633;
+  --ifm-color-primary-darkest: #b96f22;
+  --ifm-color-primary-light: #e7b37a;
+  --ifm-color-primary-lighter: #eabc89;
+  --ifm-color-primary-lightest: #f2d3b3;
+  --ifm-background-color: #16130f;
+  --ifm-background-surface-color: #1e1a15;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+}
+
+/* Hero */
+.heroBanner {
+  padding: 5rem 0 4rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  background: radial-gradient(
+      120% 120% at 50% 0%,
+      rgba(181, 101, 29, 0.18) 0%,
+      transparent 60%
+    ),
+    var(--ifm-background-color);
+}
+
+.heroTagline {
+  font-size: 1.35rem;
+  max-width: 720px;
+  margin: 0 auto 2rem;
+  opacity: 0.85;
+}
+
+.heroTitle {
+  font-size: 3.6rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.heroGrad {
+  background: linear-gradient(90deg, var(--ifm-color-primary-light), #e0a15e);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.heroButtons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.pill {
+  display: inline-block;
+  padding: 0.25rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid var(--ifm-color-primary);
+  color: var(--ifm-color-primary);
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-bottom: 1.25rem;
+  letter-spacing: 0.02em;
+}
+
+/* Feature cards */
+.featureCard {
+  height: 100%;
+  padding: 1.75rem;
+  border-radius: 14px;
+  border: 1px solid var(--ifm-color-emphasis-200);
+  background: var(--ifm-background-surface-color);
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.featureCard:hover {
+  transform: translateY(-4px);
+  border-color: var(--ifm-color-primary);
+}
+
+.featureIcon {
+  font-size: 1.9rem;
+  margin-bottom: 0.75rem;
+}
+
+.sectionPad {
+  padding: 4rem 0;
+}
+
+.sectionTitle {
+  text-align: center;
+  font-size: 2.2rem;
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+}
+
+.sectionSub {
+  text-align: center;
+  opacity: 0.75;
+  max-width: 640px;
+  margin: 0 auto 2.5rem;
+}
+
+.matrix {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.matrix th,
+.matrix td {
+  padding: 0.65rem 1rem;
+  border-bottom: 1px solid var(--ifm-color-emphasis-200);
+  text-align: left;
+}
+
+@media (max-width: 768px) {
+  .heroTitle {
+    font-size: 2.5rem;
+  }
+}

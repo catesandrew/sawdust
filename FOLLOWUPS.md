@@ -4,9 +4,11 @@ Ideas captured at extraction time (2026-08-02) — not yet started.
 
 ## Planned
 
-- [ ] **Docusaurus docs site.** The package is well-documented in code and the
-      README; stand up a proper docs site (guides, API reference, runtime matrix
-      for browser/node/worker, transport catalog).
+- [x] **Docusaurus docs site.** Stood up in `website/` — landing page, getting
+      started, guides (node/browser/request-scope/rum/testing), architecture +
+      sequence-flow diagrams (Mermaid), reference (entry points, configuration,
+      transports), and the full pattern catalog. Deploys to GitHub Pages via
+      `.github/workflows/deploy-docs.yml`.
 - [ ] **Multi-provider support, providers kept separate.** Today the transport
       layer is Datadog-centric (`@loglayer/transport-datadog`,
       `datadog-transport-common`, `dd-trace`, the RUM helpers). Generalize so
