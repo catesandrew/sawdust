@@ -146,3 +146,11 @@ context, and return `undefined` when the integration cannot activate. Then consu
 
 That is the whole extension model — any backend can land as its own package without touching a line
 of core.
+
+## Package reference
+
+Full API for each official provider:
+
+- **[`@cues/sawdust-datadog`](../providers/datadog.md)** — server + browser logs, APM trace
+  injection, and RUM.
+- **[`@cues/sawdust-otel`](../providers/otel.md)** — OpenTelemetry logs transport.
